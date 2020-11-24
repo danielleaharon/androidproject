@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "457973537401",
+    "firebase_url": "https://fitshare-889b7.firebaseio.com",
+    "project_id": "fitshare-889b7",
+    "storage_bucket": "fitshare-889b7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:457973537401:android:476ac38b0e1000285792a8",
+        "android_client_info": {
+          "package_name": "com.example.fitshare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "457973537401-8df8r6bcfclcl0juoq967j2njo0u451q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAljBYcUiQUXJOk3OVsf48Labs_d8gMGMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "457973537401-8df8r6bcfclcl0juoq967j2njo0u451q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
