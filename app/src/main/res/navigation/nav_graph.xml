@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mylistFragment">
     <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.fitshare.LoginFragment"
-        android:label="LoginFragment" />
-    <fragment
-        android:id="@+id/registerFragment"
-        android:name="com.example.fitshare.RegisterFragment"
-        android:label="RegisterFragment" /><action android:id="@+id/action_global_registerFragment" app:destination="@id/registerFragment"/>
+        android:id="@+id/mylistFragment"
+        android:name="com.example.fitshare.MylistFragment"
+        android:label="fragment_mylist"
+        tools:layout="@layout/fragment_mylist" />
+    <action
+        android:id="@+id/action_global_mylistFragment"
+        app:destination="@id/mylistFragment" />
 </navigation>
