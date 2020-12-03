@@ -12,4 +12,10 @@
     <action
         android:id="@+id/action_global_mylistFragment"
         app:destination="@id/mylistFragment" />
+    <fragment
+        android:id="@+id/productsFragment"
+        android:name="com.example.fitshare.ProductsFragment"
+        android:label="fragment_products"
+        tools:layout="@layout/fragment_products" />
+    <action android:id="@+id/action_global_productsFragment" app:destination="@id/productsFragment" />
 </navigation>

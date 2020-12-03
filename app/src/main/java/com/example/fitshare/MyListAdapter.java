@@ -28,6 +28,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
 
     private onItemClickListenr listener;
 
+
     public MyListAdapter(Activity activity,List<myLists> mylist)
     {
         this.activity=activity;
@@ -58,9 +59,22 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
     public int getItemCount() {
         return myLists.size();
     }
-public void updateList(List<myLists> myLists)
+    public void setData(List<myLists> myLists) {
+        if(myLists == null ) {
+            return;
+        }
+
+        this.myLists.clear();
+
+
+        this.myLists.addAll(myLists);
+
+        notifyDataSetChanged();
+    }
+        public void updateList(List<myLists> myLists)
 {
-    this.myLists=myLists;
+    this.myLists=(myLists);
+    notifyDataSetChanged();
 }
     static public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -74,7 +88,7 @@ public void updateList(List<myLists> myLists)
         public ViewHolder(final View view, final onItemClickListenr listener) {
             super(view);
             mView = view;
-name=mView.findViewById(R.id.name);
+           name=mView.findViewById(R.id.name);
             this.listener=listener;
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -10,6 +10,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     Button Sign_btn;
     FirebaseUser currentUser;
-    ModelFirebase db;
+     ModelFirebase  db ;
     EditText Email_edit;
     EditText Password_edit;
     String userID;
@@ -54,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-         db= new ModelFirebase();
-        mAuth = db.getmAuth();
+        db= ModelFirebase.instance;
+        mAuth = ModelFirebase.instance.getmAuth();
 
         Toolbar toolbar=findViewById(R.id.toolbar2);
         setSupportActionBar(toolbar);
@@ -136,11 +137,13 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Log.d("TAG", "Login successful ");
-                    Intent intent= new Intent(MainActivity.this,HomeActivity.class);
-                    String id = db.getUserId(task.getResult().getUser().getUid());
-                    Log.d("TAG", id);
-                    intent.putExtra("userID",id);
-                    startActivity(intent);
+                    userID = db.getUserId(task.getResult().getUser().getUid());
+
+
+                    db.getUserData(userID,MainActivity.this);
+
+                    Log.d("TAG", userID);
+
 //                    NavDirections directions = LoginFragmentDirections.actionGlobalMylistFragment();
 //                    navCtrl.navigate(directions);
 

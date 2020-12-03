@@ -23,17 +23,17 @@ public class User {
         myLists=new ArrayList<>();
 
     }
-    public void CreateList()
+    public void CreateList(List<myLists> myLists)
     {
-        this.myLists= new ArrayList<>();
-
-        myLists.add(new myLists("one list",this));
-        myLists.add(new myLists("two list",this));
-        myLists.add(new myLists("tree list",this));
-        myLists.add(new myLists("four list",this));
+     this.myLists=myLists;
     }
-    public void addtolist(String listname)
+    public void addtolist(myLists newList)
     {
-        myLists.add(new myLists(listname,this));
+        myLists.add(newList);
+
+    }
+    public List<com.example.fitshare.model.myLists> getMyLists()
+    {
+        return myLists;
     }
 }

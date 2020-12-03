@@ -1,17 +1,25 @@
 package com.example.fitshare;
 
 import android.app.Activity;
+import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fitshare.model.Products;
 import com.example.fitshare.model.myLists;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHolder> {
@@ -19,82 +27,178 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
     interface onItemClickListenr{
         void onClick(int position);
     }
-    HomeActivity parent;
+   static HomeActivity parent;
     Activity activity;
     LayoutInflater inflater;
-    static List<com.example.fitshare.model.myLists> myLists =new ArrayList<>();
+    static ProductsFragment productsFragment;
+    static List<Products> Products_list= new ArrayList<>();
+     boolean onBind=false;
 
 
-    private MyListAdapter.onItemClickListenr listener;
+    private onItemClickListenr listener;
 
-    public ProductsAdapter(Activity activity,List<myLists> mylist)
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public ProductsAdapter(HomeActivity activity, List<Products> Products_list, ProductsFragment productsFragment)
     {
         this.activity=activity;
-        myLists=mylist;
+        parent=activity;
+        this.productsFragment=productsFragment;
+        this.Products_list=Products_list;
+        SortProducts();
         this.inflater=activity.getLayoutInflater();
     }
     void setonItemClickListenr(onItemClickListenr listener){
-        this.listener= (MyListAdapter.onItemClickListenr) listener;
+        this.listener= (onItemClickListenr) listener;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(activity)
-                .inflate(R.layout.my_list_item, parent, false);
+                .inflate(R.layout.product_item, parent, false);
 
 
-        return new ViewHolder(view,listener);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
         holder.bind(position);
     }
 
     @Override
     public int getItemCount() {
-        return myLists.size();
+        return Products_list.size();
     }
-    public void updateList(List<myLists> myLists)
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void updateList(List<Products> Products_list)
     {
-        this.myLists=myLists;
+
+
+        this.Products_list=Products_list;
+        SortProducts();
+
+
+
     }
-    static public class ViewHolder extends RecyclerView.ViewHolder {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void SortProducts()
+    {
+        Products_list.sort(new Comparator<Products>() {
+            @Override
+            public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
+                if(o2.selected) return -1;
+                return 1;
+            }
+        });
+
+    }
+
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public View mView;
-        public TextView name;
+        public  TextView name;
+        public android.widget.CheckBox CheckBox;
 
         int i;
-        public MyListAdapter.onItemClickListenr listener;
 
-
-        public ViewHolder(final View view, final MyListAdapter.onItemClickListenr listener) {
+        public ViewHolder(final View view) {
             super(view);
             mView = view;
-            name = mView.findViewById(R.id.name);
-            this.listener = listener;
-            mView.setOnClickListener(new View.OnClickListener() {
+                i = getAdapterPosition();
+
+            name = (TextView) view.findViewById(R.id.name);
+            CheckBox = view.findViewById(R.id.select);
+            CheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            listener.onClick(position);
-                        }
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                    if( isChecked) {
+
+                        Products_list.get(i).setSelected(true);
+                        parent.db.UpdateProducts(Products_list.get(i),true,parent.listID);
+
+
+//                if(!SelectedProprtieslist.contains( Proprtieslist.get(i)))
+//                    SelectedProprtieslist.add(  Proprtieslist.get(i));
                     }
+                    else {
+//                if( SelectedProprtieslist.contains( Proprtieslist.get(i)))
+//                    SelectedProprtieslist.remove(Proprtieslist.get(i));
+
+                        Products_list.get(i).setSelected(false);
+                        parent.db.UpdateProducts(Products_list.get(i), false, parent.listID);
+
+
+                    }
+
+                     //   productsFragment.updateList(Products_list, i);
+                  //      notifyDataSetChanged();
+
+
+
+
+                   Log.d("TAG",""+ Products_list.get(i).isSelected()+","+ CheckBox.isChecked());
+
+
+
+
                 }
             });
 
 
+
+
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public void  updateCheckedlist()
+        {
 
-        public void bind(int position) {
+            if(CheckBox.isChecked()) {
+                Products_list.get(i).setSelected(true);
+                parent.db.UpdateProducts(Products_list.get(i),true,parent.listID);
+                Products products=   Products_list.get(i);
+                Products_list.remove(i);
+                Products_list.add(products);
 
-            this.i = position;
-            name.setText(myLists.get(position).ListName);
+//                if(!SelectedProprtieslist.contains( Proprtieslist.get(i)))
+//                    SelectedProprtieslist.add(  Proprtieslist.get(i));
+            }
+            else {
+//                if( SelectedProprtieslist.contains( Proprtieslist.get(i)))
+//                    SelectedProprtieslist.remove(Proprtieslist.get(i));
+
+                Products_list.get(i).setSelected(false);
+                parent.db.UpdateProducts(Products_list.get(i), false, parent.listID);
+
+                Products products=   Products_list.get(i);
+                Products_list.remove(i);
+                Products_list.add(products);
+
+
+            }
+
+            Log.d("TAG",""+ Products_list.get(i).isSelected()+","+CheckBox.isChecked());
+
+
+        }
+
+        public void bind( int position) {
+
+            this.i= position;
+            name.setText(Products_list.get(position).name);
+            CheckBox.setChecked(Products_list.get(position).isSelected());
+
+
+
+
+
+
+
 
 
         }

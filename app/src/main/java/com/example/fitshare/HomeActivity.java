@@ -1,6 +1,8 @@
 package com.example.fitshare;
 
-import androidx.annotation.NonNull;
+import android.content.Intent;
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
@@ -8,26 +10,27 @@ import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
-
+import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.Products;
 import com.example.fitshare.model.User;
+import com.example.fitshare.model.myLists;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
-    NavController navCtrl;
+    public NavController navCtrl;
     DatabaseReference myRef;
     FirebaseUser currentUser;
     public FirebaseAuth mAuth;
-    String id;
+     ModelFirebase db;
+    User value;
+    String listID;
+    String userID;
+   public List<Products> myUserProductsLists;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,11 +38,13 @@ public class HomeActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        db =ModelFirebase.instance;
 
         Intent intent = getIntent();
-         id =  intent.getStringExtra("userID").toString();
-        Log.d("TAG", "Login successful ");
+         userID =  intent.getStringExtra("userID").toString();
+
+       value= ModelFirebase.instance.getUser();
+
 
         navCtrl = Navigation.findNavController(this, R.id.home_nav_host);
         NavigationUI.setupActionBarWithNavController(this, navCtrl);
@@ -48,4 +53,14 @@ public class HomeActivity extends AppCompatActivity {
 
 
     }
+    public void openList(String id,int position)
+    {
+        listID=id;
+        ModelFirebase.instance.getListData(id,this);
+
+
+
+    }
+
+
 }
