@@ -11,14 +11,16 @@ import java.util.List;
 public class myLists {
 
     public String ListName;
+    public String listID;
 
     public List<User> users=new ArrayList<>();
 
     public List<Products> Products=new ArrayList<>();
 
-    public myLists(String ListName)
+    public myLists(String ListName,String listID)
     {
         this.ListName=ListName;
+        this.listID=listID;
         List<Products> Products=new ArrayList<>();
 
 

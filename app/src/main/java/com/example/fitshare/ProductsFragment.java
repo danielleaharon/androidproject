@@ -6,7 +6,9 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,29 +40,29 @@ public class ProductsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-     HomeActivity parent;
-    List<Products> Products_list= new ArrayList<>();
-    myLists mylist= new myLists();
+    HomeActivity parent;
+    List<Products> Products_list = new ArrayList<>();
+    myLists mylist = new myLists();
     EditText newListName_edit;
     ProductsAdapter ProductsAdapter;
     RecyclerView listView;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        parent= (HomeActivity) getActivity();
-       // this.Products_list.clear();
+        parent = (HomeActivity) getActivity();
+        // this.Products_list.clear();
         this.Products_list.addAll(parent.db.getProducts());
 
 
     }
 
 
-
     public ProductsFragment() {
-           }
+    }
 
     /**
      * Use this factory method to create a new instance of
@@ -95,17 +97,19 @@ public class ProductsFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_products, container, false);
-       // SortProducts();
+
+        parent.addUserList_btn.setVisibility(View.VISIBLE);
+        //put name on toolbar
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(parent.ListName);
+
         listView = view.findViewById(R.id.Products_recycler);
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
-      //  Products_list = mylist.getProductsList();
-       // mylist.SortProducts();
+       new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
-        ProductsAdapter = new ProductsAdapter(parent, Products_list,this);
+        ProductsAdapter = new ProductsAdapter(parent, Products_list, this);
         listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
-
 
 
         newListName_edit = view.findViewById(R.id.newListName_edit);
@@ -130,18 +134,18 @@ public class ProductsFragment extends Fragment {
 
                 Products Products = new Products(listName, false);
                 Products_list.add(Products);
-               // SortProducts();
-               // mylist.SortProducts();
+                // SortProducts();
+                // mylist.SortProducts();
 
                 parent.db.newProducts(listName, parent.listID);
 
                 ProductsAdapter.notifyDataSetChanged();
-               ProductsAdapter.updateList(Products_list);
+                ProductsAdapter.updateList(Products_list);
                 listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
 
                 //hide Keyboard
                 InputMethodManager inputManager = (InputMethodManager)
-                      parent.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        parent.getSystemService(Context.INPUT_METHOD_SERVICE);
 
                 inputManager.hideSoftInputFromWindow(parent.getCurrentFocus().getWindowToken(),
                         InputMethodManager.HIDE_NOT_ALWAYS);
@@ -154,16 +158,33 @@ public class ProductsFragment extends Fragment {
 
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-public void SortProducts()
-{
-    Products_list.sort(new Comparator<Products>() {
-        @Override
-        public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
-            if(o2.selected) return -1;
-            return 1;
-        }
-    });
+    public void SortProducts() {
+        Products_list.sort(new Comparator<Products>() {
+            @Override
+            public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
+                if (o2.selected) return -1;
+                return 1;
+            }
+        });
 
-}
+    }
+    //Placing the possibility of skidding in the circular list
+
+    ItemTouchHelper.SimpleCallback ItemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()),parent.listID);
+            Products_list.remove(viewHolder.getAdapterPosition());
+            ProductsAdapter.notifyDataSetChanged();
+            ProductsAdapter.updateList(Products_list);
+            listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+        }
+    };
 
 }

@@ -18,4 +18,9 @@
         android:label="fragment_products"
         tools:layout="@layout/fragment_products" />
     <action android:id="@+id/action_global_productsFragment" app:destination="@id/productsFragment" />
+    <fragment
+        android:id="@+id/addListFragment"
+        android:name="com.example.fitshare.AddListFragment"
+        android:label="fragment_add_list"
+        tools:layout="@layout/fragment_add_list" /><action android:id="@+id/action_global_addListFragment" app:destination="@id/addListFragment"/>
 </navigation>

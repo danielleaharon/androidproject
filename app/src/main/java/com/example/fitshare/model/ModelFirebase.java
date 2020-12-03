@@ -41,6 +41,7 @@ public class ModelFirebase {
     HomeActivity HomeActivity2;
     User value;
     List<Products> products;
+    List<String> listUser;
     myLists myList;
     String userID;
    private ModelFirebase()
@@ -63,26 +64,54 @@ public User getUser()
     {
          myRef = database.getReference("Users");
         String userID = myRef.push().getKey();
-
-        User user= new User(email, userID );
-        myRef.child(mAuth.getCurrentUser().getUid()).setValue(user);
+        StringBuilder temp= new StringBuilder();
+     String[] tempList =email.split("@");
+     String point = tempList[1];
+     String[] PointList= point.split("\\.");
+     temp.append(tempList[0]);
+        temp.append(PointList[0]);
+        temp.append(PointList[1]);
+        value= new User(email, temp.toString().trim() );
+        myRef.child(temp.toString().trim()).setValue(value);
 
 
     }
-    public void newList(String name,String id){
+    public void addUserToList(String userID,myLists list)
+    {
+        StringBuilder temp= new StringBuilder();
+        String[] tempList =userID.split("@");
+        String point = tempList[1];
+        String[] PointList= point.split("\\.");
+        temp.append(tempList[0]);
+        temp.append(PointList[0]);
+        temp.append(PointList[1]);
+        myRef=database.getReference("Users");
+        myRef.child(temp.toString().trim()).child("lists").child(list.listID).setValue(list);
+        tempRef=database.getReference("AllLists");
+        tempRef.child(list.listID).child("user").child(temp.toString().trim()).setValue(userID);
+    }
+    public void newList(String name,String Userid){
+
         myRef =database.getReference("Users");
         tempRef=database.getReference("AllLists");
-        myLists myNewList =new myLists(name);
-        myRef.child(id).child("lists").child(name).setValue(myNewList);
-        tempRef.child(name).setValue(myNewList);
+
+        myRef=  myRef.child(Userid).child("lists");
+        String listID = myRef.push().getKey();
+        myLists myNewList =new myLists(name,listID);
+        value.addtolist(myNewList);
+        myRef.child(listID).setValue(myNewList);
+        tempRef.child(listID).setValue(myNewList);
+        tempRef.child(listID).child("user").child(userID).setValue(value.email);
     }
     public void newProducts(String name,String id){
 
         myRef=database.getReference("AllLists");
         Products Products =new Products(name,false);
+        this.products.add(Products);
         myRef.child(id).child("Products").child(name).setValue(Products);
 
     }
+
     public void UpdateProducts(Products products, Boolean bool, String id)
     {
         myRef=database.getReference("AllLists");
@@ -95,8 +124,16 @@ public User getUser()
     {
         return mAuth;
     }
-    public String getUserId(String authID){
-       return mAuth.getCurrentUser().getUid();
+    public String getUserId(String userID){
+
+        StringBuilder temp= new StringBuilder();
+        String[] tempList =userID.split("@");
+        String point = tempList[1];
+        String[] PointList= point.split("\\.");
+        temp.append(tempList[0]);
+        temp.append(PointList[0]);
+        temp.append(PointList[1]);
+       return temp.toString().trim();
 
     }
 
@@ -202,7 +239,6 @@ public User getUser()
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
-               // products.add(snapshot.getValue(Products.class));
 
                 NavDirections directions = MylistFragmentDirections.actionGlobalProductsFragment();
                 HomeActivity2.navCtrl.navigate(directions);
@@ -211,6 +247,7 @@ public User getUser()
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
 
             }
 
@@ -225,6 +262,58 @@ public User getUser()
             }
         });
    }
+   public void removeProducts(Products product, String id)
+   {
+
+       tempRef2=database.getReference("AllLists");
+
+       this.products.remove(product);
+
+       tempRef2.child(id).child("Products").child(product.name).removeValue();
+
+   }
+    public void removeList(myLists myLists)
+    {
+
+        myRef =database.getReference("Users");
+        myRef =myRef.child(userID);
+
+        myRef.child("lists").child(myLists.listID).removeValue();
+        tempRef2.child(myLists.listID).removeValue();
+
+    }
+    public void getUserOfList(String listID) {
+
+        listUser=new ArrayList<>();
+        myRef = database.getReference("AllLists");
+        myRef = myRef.child(listID).child("user");
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+
+                    listUser.add(postSnapshot.getValue(String.class));
+                }
+
+                NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
+                HomeActivity2.navCtrl.navigate(directions);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d("TAG", "onCancelled: Something went wrong! Error:" + databaseError.getMessage());
+
+            }
+
+
+        });
+    }
+    public List<String> getUserList()
+    {
+        return listUser;
+    }
 
 
 }

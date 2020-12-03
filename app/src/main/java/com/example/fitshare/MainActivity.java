@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Log.d("TAG", "Login successful ");
-                    userID = db.getUserId(task.getResult().getUser().getUid());
+                    userID = db.getUserId(email);
 
 
                     db.getUserData(userID,MainActivity.this);

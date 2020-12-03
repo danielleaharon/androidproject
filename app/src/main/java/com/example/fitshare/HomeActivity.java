@@ -2,11 +2,12 @@ package com.example.fitshare;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
@@ -18,7 +19,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
@@ -28,8 +28,12 @@ public class HomeActivity extends AppCompatActivity {
     public FirebaseAuth mAuth;
      ModelFirebase db;
     User value;
-    String listID;
+    String listID=null;
+    String ListName;
     String userID;
+    Button addUserList_btn;
+    Button addList_btn;
+    myLists CorrectList;
    public List<Products> myUserProductsLists;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,23 @@ public class HomeActivity extends AppCompatActivity {
 
        value= ModelFirebase.instance.getUser();
 
+        addUserList_btn=findViewById(R.id.add_user);
+        addUserList_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openDialog();
+            }
+        });
+
+        addList_btn=findViewById(R.id.add_btn);
+
+        addList_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(listID!=null)
+                ModelFirebase.instance.getUserOfList(listID);
+            }
+        });
 
         navCtrl = Navigation.findNavController(this, R.id.home_nav_host);
         NavigationUI.setupActionBarWithNavController(this, navCtrl);
@@ -53,14 +74,26 @@ public class HomeActivity extends AppCompatActivity {
 
 
     }
-    public void openList(String id,int position)
+    public void openList(String ListId,String listName)
     {
-        listID=id;
-        ModelFirebase.instance.getListData(id,this);
+        listID=ListId;
+        this.ListName=listName;
+        CorrectList =new myLists(listName,listID);
+        ModelFirebase.instance.getListData(ListId,this);
 
 
 
     }
+    public void openDialog()
+    {
 
+    addUser_Dialog dialog = new addUser_Dialog();
+    dialog.show(getSupportFragmentManager(),"add user");
+   }
+   public void addUserToList(String Userid)
+   {
+
+       ModelFirebase.instance.addUserToList(Userid,CorrectList);
+   }
 
 }

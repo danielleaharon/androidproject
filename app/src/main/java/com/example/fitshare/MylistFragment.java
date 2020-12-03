@@ -1,10 +1,13 @@
 package com.example.fitshare;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -97,6 +100,7 @@ public class MylistFragment extends Fragment {
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger=new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
+        new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
         MyListAdapter = new MyListAdapter(parent, user.getMyLists());
 
@@ -105,9 +109,9 @@ public class MylistFragment extends Fragment {
             @Override
             public void onClick(int position) {
 
-                String listName = user.getMyLists().get(position).ListName.trim();
-               parent.openList(listName,position);
-                Log.d("TAG","open "+listName);
+                String listid = user.getMyLists().get(position).listID.trim();
+               parent.openList(listid,user.getMyLists().get(position).ListName);
+                Log.d("TAG","open "+listid);
 
 
 
@@ -136,8 +140,6 @@ public class MylistFragment extends Fragment {
                 }
 
 
-                myLists myNewList =new myLists(listName);
-               user.addtolist(myNewList);
 
                 ModelFirebase.instance.newList(listName,parent.userID);
 
@@ -158,4 +160,21 @@ public class MylistFragment extends Fragment {
 
         return view;
     }
+    //Placing the possibility of skidding in the circular list
+    ItemTouchHelper.SimpleCallback ItemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            parent.db.removeList(user.myLists.get(viewHolder.getAdapterPosition()));
+            user.myLists.remove(viewHolder.getAdapterPosition());
+            MyListAdapter.notifyDataSetChanged();
+            MyListAdapter.updateList(user.getMyLists());
+            listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
+        }
+    };
 }
