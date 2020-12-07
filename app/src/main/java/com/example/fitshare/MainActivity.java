@@ -8,12 +8,14 @@ import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -45,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     Button Sign_btn;
     FirebaseUser currentUser;
-     ModelFirebase  db ;
+    ModelFirebase db;
     EditText Email_edit;
     EditText Password_edit;
     String userID;
@@ -55,41 +57,41 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        db= ModelFirebase.instance;
+        db = ModelFirebase.instance;
         mAuth = ModelFirebase.instance.getmAuth();
 
-        Toolbar toolbar=findViewById(R.id.toolbar2);
+        Toolbar toolbar = findViewById(R.id.toolbar2);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 //        navCtrl= Navigation.findNavController(this,R.id.home_nav_host);
 //        NavigationUI.setupActionBarWithNavController(this,navCtrl);
 
-        Sign_btn= findViewById(R.id.Sign_btn);
-        Email_edit=findViewById(R.id.Email_edit);
-        Password_edit=findViewById(R.id.Password_edit);
-
+        Sign_btn = findViewById(R.id.Sign_btn);
+        Email_edit = findViewById(R.id.Email_edit);
+        Password_edit = findViewById(R.id.Password_edit);
 
 
         Sign_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                String email=Email_edit.getText().toString().trim();
-                String  Password = Password_edit.getText().toString().trim();
-                if(TextUtils.isEmpty(email))
-                {
+                String email = Email_edit.getText().toString().trim();
+                String Password = Password_edit.getText().toString().trim();
+                if (TextUtils.isEmpty(email)) {
                     Email_edit.setError("need email");
                     return;
                 }
-                if(TextUtils.isEmpty(Password))
-                {
+                if (TextUtils.isEmpty(Password)) {
                     Password_edit.setError("need pass");
                     return;
                 }
-                if(Password.length()<=6){
+                if (Password.length() <= 6) {
                     Password_edit.setError("need to be >=6");
                     return;
                 }
-                SignIn(email,Password);
+
+                SignIn(email, Password);
 
 
             }
@@ -104,24 +106,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-    void Register(final String email, final String pass)
-    {
+    void Register(final String email, final String pass) {
 
         mAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    Log.d("TAG", "new user: "+email+"  " +pass);
-                    Toast.makeText(MainActivity.this,"נוצר משתמש חדש, ברוכים הבאים ",Toast.LENGTH_LONG).show();
+                    Log.d("TAG", "new user: " + email + "  " + pass);
+                    Toast.makeText(MainActivity.this, "נוצר משתמש חדש, ברוכים הבאים ", Toast.LENGTH_LONG).show();
 
                     db.newUser(email);
 
-                    SignIn(email,pass);
+                    SignIn(email, pass);
 
                 } else {
                     task.getException().printStackTrace();
-                    Toast.makeText(MainActivity.this,"המשתמש כבר קיים ",Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "המשתמש כבר קיים ", Toast.LENGTH_LONG).show();
                     Log.d("TAG", "Failed to create new user");
 
                 }
@@ -129,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-    void SignIn(final String email, final String pass)
-    {
+
+    void SignIn(final String email, final String pass) {
 
         mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                     userID = db.getUserId(email);
 
 
-                    db.getUserData(userID,MainActivity.this);
+                    db.getUserData(userID, MainActivity.this);
 
                     Log.d("TAG", userID);
 
@@ -149,9 +149,9 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     task.getException().printStackTrace();
-                    Register(email,pass);
+                    Register(email, pass);
 
-                  //  Toast.makeText(MainActivity.this,"לא קיים משתמש ",Toast.LENGTH_LONG).show();
+                    //  Toast.makeText(MainActivity.this,"לא קיים משתמש ",Toast.LENGTH_LONG).show();
                     Log.d("TAG", "Login failed ");
 
                 }

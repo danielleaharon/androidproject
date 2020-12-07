@@ -7,7 +7,6 @@
     <fragment
         android:id="@+id/mylistFragment"
         android:name="com.example.fitshare.MylistFragment"
-        android:label="fragment_mylist"
         tools:layout="@layout/fragment_mylist" />
     <action
         android:id="@+id/action_global_mylistFragment"
@@ -23,4 +22,17 @@
         android:name="com.example.fitshare.AddListFragment"
         android:label="fragment_add_list"
         tools:layout="@layout/fragment_add_list" /><action android:id="@+id/action_global_addListFragment" app:destination="@id/addListFragment"/>
+    <fragment
+        android:id="@+id/editProductsFragment"
+        android:name="com.example.fitshare.EditProductsFragment"
+        android:label="fragment_edit_products"
+        tools:layout="@layout/fragment_edit_products" >
+        <argument
+            android:name="Product_Name"
+            app:argType="string" />
+        <argument
+            android:name="Product_unit"
+            app:argType="integer" />
+    </fragment>
+    <action android:id="@+id/action_global_editProductsFragment" app:destination="@id/editProductsFragment" />
 </navigation>

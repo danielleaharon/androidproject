@@ -1,5 +1,6 @@
 package com.example.fitshare.model;
 
+import android.graphics.Bitmap;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
@@ -7,8 +8,9 @@ import androidx.annotation.RequiresApi;
 public class Products {
 
     public String name;
-    public String img;
+
     public boolean selected;
+    public Bitmap img;
 
    public Products (String name, boolean selected)
     {
@@ -31,5 +33,9 @@ public class Products {
         this.selected=selected;
     }
     public String getName(){return this.name;}
+    public void setImage(Bitmap bitmap)
+    {
+        this.img=bitmap;
+    }
 
 }

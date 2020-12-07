@@ -24,31 +24,32 @@ import java.util.List;
 
 public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHolder> {
 
-    interface onItemClickListenr{
+    interface onItemClickListenr {
         void onClick(int position);
     }
-   static HomeActivity parent;
+
+    static HomeActivity parent;
     Activity activity;
     LayoutInflater inflater;
     static ProductsFragment productsFragment;
-    static List<Products> Products_list= new ArrayList<>();
-     boolean onBind=false;
+    static List<Products> Products_list = new ArrayList<>();
+    boolean onBind = false;
 
 
     private onItemClickListenr listener;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public ProductsAdapter(HomeActivity activity, List<Products> Products_list, ProductsFragment productsFragment)
-    {
-        this.activity=activity;
-        parent=activity;
-        this.productsFragment=productsFragment;
-        this.Products_list=Products_list;
+    public ProductsAdapter(HomeActivity activity, List<Products> Products_list, ProductsFragment productsFragment) {
+        this.activity = activity;
+        parent = activity;
+        this.productsFragment = productsFragment;
+        this.Products_list = Products_list;
         SortProducts();
-        this.inflater=activity.getLayoutInflater();
+        this.inflater = activity.getLayoutInflater();
     }
-    void setonItemClickListenr(onItemClickListenr listener){
-        this.listener= (onItemClickListenr) listener;
+
+    void setonItemClickListenr(onItemClickListenr listener) {
+        this.listener = (onItemClickListenr) listener;
     }
 
     @NonNull
@@ -58,7 +59,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
                 .inflate(R.layout.product_item, parent, false);
 
 
-        return new ViewHolder(view);
+        return new ViewHolder(view, listener);
     }
 
     @Override
@@ -71,24 +72,23 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
     public int getItemCount() {
         return Products_list.size();
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void updateList(List<Products> Products_list)
-    {
+    public void updateList(List<Products> Products_list) {
 
 
-        this.Products_list=Products_list;
+        this.Products_list = Products_list;
         SortProducts();
 
 
-
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void SortProducts()
-    {
+    public void SortProducts() {
         Products_list.sort(new Comparator<Products>() {
             @Override
             public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
-                if(o2.selected) return -1;
+                if (o2.selected) return -1;
                 return 1;
             }
         });
@@ -99,16 +99,16 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public View mView;
-        public  TextView name;
+        public TextView name;
         public android.widget.CheckBox CheckBox;
-
+        public onItemClickListenr listener;
         int i;
 
-        public ViewHolder(final View view) {
+        public ViewHolder(final View view, final onItemClickListenr listener) {
             super(view);
             mView = view;
-                i = getAdapterPosition();
-
+            i = getAdapterPosition();
+            this.listener = listener;
             name = (TextView) view.findViewById(R.id.name);
             CheckBox = view.findViewById(R.id.select);
             CheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -116,16 +116,15 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                    if( isChecked) {
+                    if (isChecked) {
 
                         Products_list.get(i).setSelected(true);
-                        parent.db.UpdateProducts(Products_list.get(i),true,parent.listID);
+                        parent.db.UpdateProducts(Products_list.get(i), true, parent.listID);
 
 
 //                if(!SelectedProprtieslist.contains( Proprtieslist.get(i)))
 //                    SelectedProprtieslist.add(  Proprtieslist.get(i));
-                    }
-                    else {
+                    } else {
 //                if( SelectedProprtieslist.contains( Proprtieslist.get(i)))
 //                    SelectedProprtieslist.remove(Proprtieslist.get(i));
 
@@ -135,70 +134,67 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
 
                     }
 
-                     //   productsFragment.updateList(Products_list, i);
-                  //      notifyDataSetChanged();
+                    //   productsFragment.updateList(Products_list, i);
+                    //      notifyDataSetChanged();
 
 
-
-
-                   Log.d("TAG",""+ Products_list.get(i).isSelected()+","+ CheckBox.isChecked());
-
-
+                    Log.d("TAG", "" + Products_list.get(i).isSelected() + "," + CheckBox.isChecked());
 
 
                 }
             });
 
 
-
+            mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onClick(position);
+                        }
+                    }
+                }
+            });
 
         }
 
         @RequiresApi(api = Build.VERSION_CODES.N)
-        public void  updateCheckedlist()
-        {
+        public void updateCheckedlist() {
 
-            if(CheckBox.isChecked()) {
+            if (CheckBox.isChecked()) {
                 Products_list.get(i).setSelected(true);
-                parent.db.UpdateProducts(Products_list.get(i),true,parent.listID);
-                Products products=   Products_list.get(i);
+                parent.db.UpdateProducts(Products_list.get(i), true, parent.listID);
+                Products products = Products_list.get(i);
                 Products_list.remove(i);
                 Products_list.add(products);
 
 //                if(!SelectedProprtieslist.contains( Proprtieslist.get(i)))
 //                    SelectedProprtieslist.add(  Proprtieslist.get(i));
-            }
-            else {
+            } else {
 //                if( SelectedProprtieslist.contains( Proprtieslist.get(i)))
 //                    SelectedProprtieslist.remove(Proprtieslist.get(i));
 
                 Products_list.get(i).setSelected(false);
                 parent.db.UpdateProducts(Products_list.get(i), false, parent.listID);
 
-                Products products=   Products_list.get(i);
+                Products products = Products_list.get(i);
                 Products_list.remove(i);
                 Products_list.add(products);
 
 
             }
 
-            Log.d("TAG",""+ Products_list.get(i).isSelected()+","+CheckBox.isChecked());
+            Log.d("TAG", "" + Products_list.get(i).isSelected() + "," + CheckBox.isChecked());
 
 
         }
 
-        public void bind( int position) {
+        public void bind(int position) {
 
-            this.i= position;
+            this.i = position;
             name.setText(Products_list.get(position).name);
             CheckBox.setChecked(Products_list.get(position).isSelected());
-
-
-
-
-
-
-
 
 
         }

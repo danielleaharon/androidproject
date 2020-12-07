@@ -21,6 +21,7 @@ import android.widget.EditText;
 import com.example.fitshare.model.ModelFirebase;
 import com.example.fitshare.model.myLists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,10 +38,12 @@ public class AddListFragment extends Fragment {
     RecyclerView listView;
     HomeActivity parent;
     AddListAdapter addListAdapter;
+    EditText listName_edit;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    List<String > user= new ArrayList<>();
 
     public AddListFragment() {
         // Required empty public constructor
@@ -82,16 +85,78 @@ public class AddListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_list, container, false);
+        listName_edit= view.findViewById(R.id.listName_edit);
+        Button addList=view.findViewById(R.id.addList);
+        addList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+
+
+                String listName=listName_edit.getText().toString().trim();
+
+                if(TextUtils.isEmpty(listName))
+                {
+                    listName_edit.setError("need name");
+                    return;
+
+
+                }
+                for (myLists name: parent.value.getMyLists())
+                {
+                    if(name.ListName.equals(listName)){
+                        listName_edit.setError("The name is busy");
+                        return;
+                    }
+                }
+                if(parent.CorrectList!=null)
+                {
+                    parent.CorrectList.ListName=listName;
+                    ModelFirebase.instance.UpdateListData(parent.CorrectList,parent.ListPosition);
+
+                }else {
+                    ModelFirebase.instance.newList(listName, parent.userID, user);
+                }
+
+                parent.navCtrl.popBackStack();
+
+
+            }
+        });
+        Button cancel_btn=view.findViewById(R.id.cancel);
+        cancel_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                parent.navCtrl.popBackStack();
+            }
+        });
+
+
+        Button add_friend_btn=view.findViewById(R.id.add_friend_btn);
+        add_friend_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+              parent.openDialog();
+
+
+
+            }
+        });
         listView= view.findViewById(R.id.friend_ryc);
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger=new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
         EditText List_name = view.findViewById(R.id.listName_edit);
-        if(parent.CorrectList.ListName!=null)
-        List_name.setText(parent.CorrectList.ListName);
+        if(parent.CorrectList!=null) {
+            List_name.setText(parent.CorrectList.ListName);
+            addListAdapter = new AddListAdapter(parent, parent.db.getUserList());
+        }
+        else
+        {
+            user= parent.userDailog;
 
-        addListAdapter = new AddListAdapter(parent, parent.db.getUserList());
+            addListAdapter = new AddListAdapter(parent, user);
+        }
 
         listView.setAdapter((RecyclerView.Adapter) addListAdapter);
         addListAdapter.setonItemClickListenr(new AddListAdapter.onItemClickListenr() {
@@ -101,9 +166,6 @@ public class AddListFragment extends Fragment {
 
             }
         });
-
-
-
 
         return view;
     }

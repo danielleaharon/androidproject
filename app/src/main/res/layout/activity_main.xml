@@ -4,72 +4,101 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F4F2"
+    android:background="@drawable/loginicon2"
     tools:context=".MainActivity">
 
-<!--    <fragment-->
-<!--        android:id="@+id/home_nav_host"-->
-<!--        android:name="androidx.navigation.fragment.NavHostFragment"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:defaultNavHost="true"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.888"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/toolbar2"-->
-<!--        app:layout_constraintVertical_bias="1.0"-->
-<!--        app:navGraph="@navigation/nav_graph" />-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/home_nav_host"-->
+    <!--        android:name="androidx.navigation.fragment.NavHostFragment"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        app:defaultNavHost="true"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintHorizontal_bias="0.888"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/toolbar2"-->
+    <!--        app:layout_constraintVertical_bias="1.0"-->
+    <!--        app:navGraph="@navigation/nav_graph" />-->
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar2"
         android:layout_width="0dp"
         android:layout_height="57dp"
         android:layout_marginEnd="1dp"
-        android:background="?attr/colorPrimary"
+        android:background="#00FBF9F9"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <EditText
         android:id="@+id/Email_edit"
-        android:layout_width="358dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="204dp"
+        android:layout_width="225dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="196dp"
         android:ems="10"
         android:hint="Email"
+        android:imeOptions="actionDone"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintHorizontal_bias="0.682"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/Password_edit"
-        android:layout_width="355dp"
-        android:layout_height="46dp"
+        android:layout_width="225dp"
+        android:layout_height="45dp"
         android:layout_marginTop="31dp"
         android:ems="10"
         android:hint="Password"
+        android:imeOptions="actionDone"
         android:inputType="textPassword"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.682"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Email_edit"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.002" />
 
     <Button
         android:id="@+id/Sign_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="128dp"
+        android:layout_width="238dp"
+        android:layout_height="41dp"
+        android:layout_marginStart="156dp"
         android:layout_marginTop="50dp"
         android:layout_marginBottom="204dp"
-        android:text="Sign in/Register"
+        android:background="@drawable/custom_rounded_corners"
+        android:color="#0B0A0A"
+        android:fontFamily="@font/imprima"
+        android:radius="100dp"
+        android:shadowColor="#000000"
+        android:text="Login / Register"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Password_edit"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.756" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="28dp"
+        android:layout_height="26dp"
+        app:layout_constraintBottom_toBottomOf="@+id/Email_edit"
+        app:layout_constraintEnd_toStartOf="@+id/Email_edit"
+        app:layout_constraintTop_toTopOf="@+id/Email_edit"
+        app:srcCompat="@drawable/mailicon" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="28dp"
+        android:layout_height="26dp"
+        app:layout_constraintBottom_toBottomOf="@+id/Password_edit"
+        app:layout_constraintEnd_toStartOf="@+id/Password_edit"
+        app:layout_constraintTop_toTopOf="@+id/Password_edit"
+        app:srcCompat="@drawable/passwordicon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,6 @@
 package com.example.fitshare;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -14,10 +15,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDialog;
 import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.fragment.app.DialogFragment;
+
 
 public class addUser_Dialog extends AppCompatDialogFragment {
     HomeActivity parent;
     EditText user_edit;
+    String data;
+
+
+ public String getData()
+ {
+     return data;
+ }
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -43,7 +54,15 @@ public class addUser_Dialog extends AppCompatDialogFragment {
                     user_edit.setError("need UserName");
                     return;
                 }
+                if(parent.CorrectList!=null)
                 parent.addUserToList(userName);
+                else {
+                    parent.setUserDailog(userName);
+                    data=userName;
+
+
+
+                }
             }
         });
 

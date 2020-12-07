@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavDirections;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -91,6 +92,13 @@ public class ProductsFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        parent.RefreshList();
+        parent.setTitle(parent.ListName);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -100,17 +108,28 @@ public class ProductsFragment extends Fragment {
 
         parent.addUserList_btn.setVisibility(View.VISIBLE);
         //put name on toolbar
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(parent.ListName);
-
+        parent.setTitle(parent.ListName);
+        parent.addList_btn.setBackgroundResource(R.drawable.editlisticon);
         listView = view.findViewById(R.id.Products_recycler);
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
-       new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
+        new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
         ProductsAdapter = new ProductsAdapter(parent, Products_list, this);
         listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+        ProductsAdapter.setonItemClickListenr(new ProductsAdapter.onItemClickListenr() {
+            @Override
+            public void onClick(int position) {
 
+                Products products = Products_list.get(position);
+
+                NavDirections directions = ProductsFragmentDirections.actionGlobalEditProductsFragment(products.name, 1);
+                parent.navCtrl.navigate(directions);
+
+
+            }
+        });
 
         newListName_edit = view.findViewById(R.id.newListName_edit);
         Button add_item = view.findViewById(R.id.add_list);
@@ -170,7 +189,7 @@ public class ProductsFragment extends Fragment {
     }
     //Placing the possibility of skidding in the circular list
 
-    ItemTouchHelper.SimpleCallback ItemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT) {
+    ItemTouchHelper.SimpleCallback ItemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
             return false;
@@ -179,7 +198,7 @@ public class ProductsFragment extends Fragment {
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-            parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()),parent.listID);
+            parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()), parent.listID);
             Products_list.remove(viewHolder.getAdapterPosition());
             ProductsAdapter.notifyDataSetChanged();
             ProductsAdapter.updateList(Products_list);
