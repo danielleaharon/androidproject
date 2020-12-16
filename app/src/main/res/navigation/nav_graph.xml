@@ -28,11 +28,11 @@
         android:label="fragment_edit_products"
         tools:layout="@layout/fragment_edit_products" >
         <argument
-            android:name="Product_Name"
-            app:argType="string" />
+            android:name="Product"
+            app:argType="com.example.fitshare.model.Products" />
         <argument
-            android:name="Product_unit"
-            app:argType="integer" />
+            android:name="ListID"
+            app:argType="string" />
     </fragment>
     <action android:id="@+id/action_global_editProductsFragment" app:destination="@id/editProductsFragment" />
 </navigation>

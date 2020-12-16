@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.fitshare.model.ModelFirebase;
 import com.example.fitshare.model.myLists;
 
 import java.util.ArrayList;
@@ -20,17 +22,16 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
         void onClick(int position);
     }
 
-    HomeActivity parent;
+    static HomeActivity parent;
     Activity activity;
     LayoutInflater inflater;
     static List<String> UserList = new ArrayList<>();
-
-
     private onItemClickListenr listener;
 
 
-    public AddListAdapter(Activity activity, List<String> UserList) {
-        this.activity = activity;
+    public AddListAdapter(HomeActivity activity, List<String> UserList) {
+        this.parent = activity;
+        this.activity=activity;
         this.UserList = UserList;
         this.inflater = activity.getLayoutInflater();
     }
@@ -68,10 +69,11 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
         notifyDataSetChanged();
     }
 
-    static public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public View mView;
         public TextView name;
+        public Button delete_btn;
 
         int i;
         public onItemClickListenr listener;
@@ -81,6 +83,20 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
             super(view);
             mView = view;
             name = mView.findViewById(R.id.name);
+            delete_btn=mView.findViewById(R.id.delete_btn);
+
+            delete_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(parent.listID!=null)
+                    {
+                        ModelFirebase.instance.deleteUserFromList(UserList.get(getAdapterPosition()).trim(),parent.listID);
+                    }
+
+                    UserList.remove(getAdapterPosition());
+                    notifyDataSetChanged();
+                }
+            });
             this.listener = listener;
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -102,6 +118,8 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
 
             this.i = position;
             name.setText(UserList.get(position));
+            if(ModelFirebase.instance.getUser().email.equals(UserList.get(position)))
+                delete_btn.setVisibility(View.INVISIBLE);
 
 
         }

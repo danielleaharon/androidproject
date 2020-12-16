@@ -1,27 +1,27 @@
 package com.example.fitshare.model;
 
-import android.graphics.Bitmap;
-import android.os.Build;
+import java.io.Serializable;
 
-import androidx.annotation.RequiresApi;
-
-public class Products {
+public class Products implements Serializable {
 
     public String name;
-
+    public String Amount;
     public boolean selected;
-    public Bitmap img;
+    public String imgUrl;
 
-   public Products (String name, boolean selected)
+   public Products (String name, boolean selected,String Url,String amount)
     {
         this.name=name;
-        this.selected=false;
+        this.selected=selected;
+        this.imgUrl=Url;
+       this.Amount=amount;
 
     }
     public Products ()
     {
         this.name="name";
         this.selected=false;
+        this.Amount="1";
 
     }
     public  boolean isSelected()
@@ -33,9 +33,11 @@ public class Products {
         this.selected=selected;
     }
     public String getName(){return this.name;}
-    public void setImage(Bitmap bitmap)
+    public void setImage(String url)
     {
-        this.img=bitmap;
+        this.imgUrl=url;
     }
+
+
 
 }

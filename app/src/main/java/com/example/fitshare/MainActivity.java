@@ -3,6 +3,7 @@ package com.example.fitshare;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -15,6 +16,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     EditText Password_edit;
     String userID;
     DatabaseReference myRef;
+    Button Forgot_Password_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +67,44 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-//        navCtrl= Navigation.findNavController(this,R.id.home_nav_host);
-//        NavigationUI.setupActionBarWithNavController(this,navCtrl);
-
         Sign_btn = findViewById(R.id.Sign_btn);
         Email_edit = findViewById(R.id.Email_edit);
         Password_edit = findViewById(R.id.Password_edit);
+        Forgot_Password_btn = findViewById(R.id.Forgot_Password_btn);
+
+        //If the user has already logged in to the app, doesn't ask them to reconnect
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // User is signed in
+            db.getUserData(user.getEmail(), MainActivity.this);
+        } else {
+            // User is signed out
+
+        }
+
+
+        //Rest password mail
+        Forgot_Password_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = Email_edit.getText().toString().trim();
+
+                if (TextUtils.isEmpty(email)) {
+                    Email_edit.setError("email");
+                    return;
+                }
+                mAuth.sendPasswordResetEmail(email)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(MainActivity.this, "Email sent", Toast.LENGTH_SHORT).show();
+                                    Log.d("TAG", "Email sent.");
+                                }
+                            }
+                        });
+            }
+        });
 
 
         Sign_btn.setOnClickListener(new View.OnClickListener() {
@@ -79,17 +114,34 @@ public class MainActivity extends AppCompatActivity {
                 String email = Email_edit.getText().toString().trim();
                 String Password = Password_edit.getText().toString().trim();
                 if (TextUtils.isEmpty(email)) {
-                    Email_edit.setError("need email");
+                    Email_edit.setError("email");
                     return;
                 }
                 if (TextUtils.isEmpty(Password)) {
-                    Password_edit.setError("need pass");
+                    Password_edit.setError("password");
                     return;
                 }
                 if (Password.length() <= 6) {
-                    Password_edit.setError("need to be >=6");
+                    Password_edit.setError("Password < 7");
                     return;
                 }
+                if(!email.contains("@")) {
+                        Email_edit.setError("Invalid email");
+                    return;
+                }
+                else {
+                    String[] tempList = email.split("@");
+                    if(tempList.length<2) {
+                        Email_edit.setError("Invalid email");
+                        return;
+                    }
+                    else if(!tempList[1].contains(".")) {
+                        Email_edit.setError("Invalid email");
+                        return;
+                    }
+
+                }
+
 
                 SignIn(email, Password);
 
@@ -99,9 +151,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    public void hideKeyboard() {
+
+        InputMethodManager imm = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
 
     }
 
@@ -113,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Log.d("TAG", "new user: " + email + "  " + pass);
-                    Toast.makeText(MainActivity.this, "נוצר משתמש חדש, ברוכים הבאים ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, email+", welcome ", Toast.LENGTH_LONG).show();
+
 
                     db.newUser(email);
 
@@ -121,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
 
                 } else {
                     task.getException().printStackTrace();
-                    Toast.makeText(MainActivity.this, "המשתמש כבר קיים ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "הסיסמא לא נכונה ", Toast.LENGTH_LONG).show();
                     Log.d("TAG", "Failed to create new user");
 
                 }
@@ -136,16 +190,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
+
                     Log.d("TAG", "Login successful ");
+
+                    //openUploadPage();
                     userID = db.getUserId(email);
+                    db.getUserData(email, MainActivity.this);
 
-
-                    db.getUserData(userID, MainActivity.this);
-
-                    Log.d("TAG", userID);
-
-//                    NavDirections directions = LoginFragmentDirections.actionGlobalMylistFragment();
-//                    navCtrl.navigate(directions);
 
                 } else {
                     task.getException().printStackTrace();
@@ -160,4 +211,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void openUploadPage() {
+        UploadFragment UploadFragment = new UploadFragment();
+        UploadFragment.parent = this;
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.main, UploadFragment, "TAG");
+        transaction.addToBackStack("TAG");
+        transaction.commit();
+    }
 }

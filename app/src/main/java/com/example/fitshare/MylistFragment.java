@@ -1,6 +1,8 @@
 package com.example.fitshare;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -13,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.text.TextUtils;
 import android.util.Log;
@@ -31,42 +34,25 @@ import com.google.firebase.database.DatabaseReference;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link MylistFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class MylistFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+
     User user;
-    String userID;
     RecyclerView listView;
     HomeActivity parent;
-    MyListAdapter MyListAdapter;
-//    ListViewModel listViewModel;
-//    LiveData<List<myLists>> liveData;
-//    List<myLists> Data= new ArrayList<>();
+   private MyListAdapter MyListAdapter;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
+
 
     public MylistFragment() {
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MylistFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static MylistFragment newInstance(String param1, String param2) {
         MylistFragment fragment = new MylistFragment();
         Bundle args = new Bundle();
@@ -80,38 +66,54 @@ public class MylistFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
-        this.user = parent.value;
+        this.user = ModelFirebase.instance.getUser();
+        ModelFirebase.instance.setActivity(parent);
 
-        //    listViewModel=new ViewModelProvider(this).get(ListViewModel.class);
 
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+//        if (getArguments() != null) {
+//            mParam1 = getArguments().getString(ARG_PARAM1);
+//            mParam2 = getArguments().getString(ARG_PARAM2);
+//        }
 
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_mylist, container, false);
-        parent.setTitle("רשימות");
+       if( parent.value.language.equals("Hebrew"))
+           parent.setTitle("רשימות");
+       else parent.setTitle("Lists");
         parent.CorrectList = null;
-        parent.addList_btn.setBackgroundResource(R.drawable.addlisticon);
+        parent.listID=null;
+        parent.save_btn.setVisibility(View.INVISIBLE);
+        parent.logout_btn.setVisibility(View.VISIBLE);
+        parent.addList_btn.setVisibility(View.INVISIBLE);
+        parent.copy_list_btn.setVisibility(View.INVISIBLE);
+        parent.language_btn.setVisibility(View.VISIBLE);
+
+        parent.floating_addList_btn.show();
+
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+
         listView = view.findViewById(R.id.my_list_recycler);
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
         new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
-        MyListAdapter = new MyListAdapter(parent, user.getMyLists());
+        MyListAdapter = new MyListAdapter(parent);
 
         listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
         MyListAdapter.setonItemClickListenr(new MyListAdapter.onItemClickListenr() {
@@ -126,52 +128,7 @@ public class MylistFragment extends Fragment {
             }
         });
 
-//        liveData = listViewModel.getData();
-//        liveData.observe(getViewLifecycleOwner(), new Observer<List<myLists>>() {
-//            @Override
-//            public void onChanged(List<myLists> myLists) {
-//                Data=myLists;
-//                MyListAdapter.notifyDataSetChanged();
-//            }
-//        });
-//         newListName_edit = view.findViewById(R.id.newListName_edit);
-//        Button add_item=view.findViewById(R.id.add_list);
-//        add_item.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//
-//
-//                String listName=newListName_edit.getText().toString().trim();
-//
-//                if(TextUtils.isEmpty(listName))
-//                {
-//                    newListName_edit.setError("need name");
-//                    return;
-//                }
-//                for (com.example.fitshare.model.myLists name: user.getMyLists())
-//                {
-//                    if(name.ListName.equals(listName)){
-//                        newListName_edit.setError("The name is busy");
-//                    return;}
-//                }
-//
-//
-//
-////                ModelFirebase.instance.newList(listName,parent.userID, user);
-//
-//
-//                MyListAdapter.updateList((List<com.example.fitshare.model.myLists>) user.getMyLists());
-//                listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
-//
-//
-//                InputMethodManager inputManager = (InputMethodManager)
-//                        parent.getSystemService(Context.INPUT_METHOD_SERVICE);
-//
-//                inputManager.hideSoftInputFromWindow(parent.getCurrentFocus().getWindowToken(),
-//                        InputMethodManager.HIDE_NOT_ALWAYS);
-//            }
-//        });
+
 
 
         return view;
@@ -187,11 +144,28 @@ public class MylistFragment extends Fragment {
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
             parent.db.removeList(user.myLists.get(viewHolder.getAdapterPosition()));
             user.myLists.remove(viewHolder.getAdapterPosition());
             MyListAdapter.notifyDataSetChanged();
-            MyListAdapter.updateList(user.getMyLists());
+            MyListAdapter.updateList();
             listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
         }
+
     };
+
+    @Override
+    public void onRefresh() {
+        swipeRefreshLayout.setRefreshing(true);
+        refreshList();
+    }
+    public void refreshList(){
+
+        ModelFirebase.instance.refreshUserList();
+        MyListAdapter.notifyDataSetChanged();
+        MyListAdapter.updateList();
+        listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
+        swipeRefreshLayout.setRefreshing(false);
+
+    }
 }
