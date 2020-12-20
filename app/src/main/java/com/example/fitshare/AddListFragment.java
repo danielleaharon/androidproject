@@ -167,7 +167,7 @@ public class AddListFragment extends Fragment {
 
 
                     } else {
-                        ModelFirebase.instance.newList(listName, parent.userID, user);
+                        ModelFirebase.instance.newList(listName, parent.value.id, user);
                     }
                 hideKeyboard(v);
                     parent.navCtrl.popBackStack();

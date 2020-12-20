@@ -43,21 +43,20 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener{
+public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
     public NavController navCtrl;
-    DatabaseReference myRef;
-    FirebaseUser currentUser;
-    public FirebaseAuth mAuth;
+
     static final int REQUEST_IMAGE_CAPTURE = 1;
     ModelFirebase db;
     User value;
     String listID = null;
     String ListName;
-    String userID;
-    Button addUserList_btn;
+
+
     Button addList_btn;
     myLists CorrectList;
     TextView titel;
@@ -69,16 +68,15 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     Button copy_list_btn;
     Button language_btn;
     List<String> userDailog = new ArrayList<>();
-    public List<Products> myUserProductsLists;
+
     FloatingActionButton floating_addList_btn;
 
 
-
     //Dialog
-    private float mScaleFactor = 1.0f;
 
 
-    int shortAnimationDuration;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +90,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         db = ModelFirebase.instance;
 
-        language_btn=findViewById(R.id.language_btn);
+        language_btn = findViewById(R.id.language_btn);
         language_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -102,27 +100,25 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
             }
         });
-        Intent intent = getIntent();
-        userID = intent.getStringExtra("userID").toString();
 
         value = ModelFirebase.instance.getUser();
-       ModelFirebase.instance.createAllUserList();
-         floating_addList_btn = findViewById(R.id.floating_addList_btn);
-         floating_addList_btn.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View view) {
+        ModelFirebase.instance.createAllUserList();
+        floating_addList_btn = findViewById(R.id.floating_addList_btn);
+        floating_addList_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
 
-                     userDailog = new ArrayList<>();
-                     userDailog.add(value.email);
-                     NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
-                     navCtrl.navigate(directions);
+                userDailog = new ArrayList<>();
+                userDailog.add(value.email);
+                NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
+                navCtrl.navigate(directions);
 
 
-             }
-         });
+            }
+        });
 
-        logout_btn=findViewById(R.id.logout_btn);
+        logout_btn = findViewById(R.id.logout_btn);
 
         logout_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +127,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             }
         });
         addList_btn = findViewById(R.id.add_btn);
-        save_btn=findViewById(R.id.save_btn);
+        save_btn = findViewById(R.id.save_btn);
 
         addList_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,7 +143,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 }
             }
         });
-        copy_list_btn=findViewById(R.id.copy_list_btn);
+        copy_list_btn = findViewById(R.id.copy_list_btn);
         copy_list_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,19 +155,19 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
 
     }
-    public void OpenProductList( )
-    {
+
+    public void OpenProductList() {
 
         NavDirections directions = MylistFragmentDirections.actionGlobalProductsFragment();
         navCtrl.navigate(directions);
     }
 
     public void openList(String ListId, String listName, int position) {
-        listID = ListId;
+        this.listID = ListId;
         this.ListName = listName;
         this.ListPosition = position;
-        CorrectList =db.getUser().getMyLists().get(position);
-        ModelFirebase.instance.getListData(ListId, this,position);
+        CorrectList = db.getUser().getMyLists().get(position);
+        ModelFirebase.instance.getListData(ListId, this, position);
 
 
     }
@@ -180,11 +176,9 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         myLists myLists = db.getUser().getMyLists().get(this.ListPosition);
         this.ListName = myLists.ListName;
 
-        //    ModelFirebase.instance.getListData(ListId,this);
 
 
     }
-
 
 
     public void addUserToList(String Userid) {
@@ -203,95 +197,93 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if(item.getItemId()==android.R.id.home) {
+        if (item.getItemId() == android.R.id.home) {
             navCtrl.navigateUp();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-public void openImage(Products products,String listID,String url)
-{
+    public void openImage(Products products, String listID, String url) {
 
 
-    Products product;
-     ScaleGestureDetector scaleGestureDetector;
+        Products product;
+        ScaleGestureDetector scaleGestureDetector;
 
 
-    AddListAdapter addListAdapter;
-    FloatingActionButton add_img;
+        AddListAdapter addListAdapter;
+        FloatingActionButton add_img;
 
-    product=products;
-    Dialog dialog1=new Dialog(this);
+        product = products;
+        Dialog dialog1 = new Dialog(this);
 
-    dialog1.setContentView(R.layout.camar_dailog);
-    dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-    Window window = dialog1.getWindow();
-    window.setGravity(Gravity.CENTER);
-
-
-
-    imageDialog = dialog1.findViewById(R.id.imageDailog);
-    if(!product.imgUrl.equals("noImage"))
-        Picasso.get().load(product.imgUrl).into(imageDialog);
-    else imageDialog.setImageResource(R.drawable.nophoto);
+        dialog1.setContentView(R.layout.camar_dailog);
+        dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        Window window = dialog1.getWindow();
+        window.setGravity(Gravity.CENTER);
 
 
-
-    add_img = dialog1.findViewById(R.id.addImg_btn);
-    add_img.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            takePhoto();
-
-        }
-    });
+        imageDialog = dialog1.findViewById(R.id.imageDailog);
+        if (!product.imgUrl.equals("noImage"))
+            Picasso.get().load(product.imgUrl).into(imageDialog);
+        else imageDialog.setImageResource(R.drawable.nophoto);
 
 
+        add_img = dialog1.findViewById(R.id.addImg_btn);
+        add_img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
 
-    Button save_btn=dialog1.findViewById(R.id.save_btn);
-    save_btn.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            ImageModel.uploadImage(imageBitmap, product.name + listID, new ImageModel.Listener() {
-                @Override
-                public void onSuccess(String url) {
-
-                    product.setImage(url);
-                    ModelFirebase.instance.UpdateProducts(product,  listID);
-                    dialog1.cancel();
+            }
+        });
 
 
-                }
+        Button save_btn = dialog1.findViewById(R.id.save_btn);
+        save_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-                @Override
-                public void onFail() {
-
-                }
-            });
-        }
-    });
-
-    Button cancel_btn=dialog1.findViewById(R.id.cancel_btn);
-    cancel_btn.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            dialog1.cancel();
-        }
-    });
+                if (imageBitmap != null) {
+                    ImageModel.uploadImage(imageBitmap, product.name + listID, new ImageModel.Listener() {
+                        @Override
+                        public void onSuccess(String url) {
 
 
-
-    dialog1.setCancelable(true);
-    window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT,ActionBar.LayoutParams.WRAP_CONTENT);
-    dialog1.show();
-
+                            product.setImage(url);
+                            ModelFirebase.instance.UpdateProducts(product, listID);
+                            dialog1.cancel();
 
 
+                        }
+
+                        @Override
+                        public void onFail() {
+                            dialog1.cancel();
+
+                        }
+                    });
+                } else dialog1.cancel();
+            }
+
+        });
+
+        Button cancel_btn = dialog1.findViewById(R.id.cancel_btn);
+        cancel_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog1.cancel();
+            }
+        });
 
 
-}
+        dialog1.setCancelable(true);
+        window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+        dialog1.show();
+
+
+    }
+
     public void takePhoto() {
 
         Intent tackPicIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -317,8 +309,8 @@ public void openImage(Products products,String listID,String url)
         switch (item.getItemId()) {
 
             case R.id.hebrew:
-                    value.language = "Hebrew";
-                    ModelFirebase.instance.changeLanguage("Hebrew");
+                value.language = "Hebrew";
+                ModelFirebase.instance.changeLanguage("Hebrew");
                 setTitle("רשימות");
 
                 break;
@@ -337,12 +329,21 @@ public void openImage(Products products,String listID,String url)
         navCtrl.navigate(directions);
         return true;
     }
+
     public void showPopup(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.setOnMenuItemClickListener(this);
 
-            popup.inflate(R.menu.language_english);
+        popup.inflate(R.menu.language_english);
 
         popup.show();
     }
+
+    public String  getListID() {
+
+      return   this.listID;
+
+    }
+
+
 }

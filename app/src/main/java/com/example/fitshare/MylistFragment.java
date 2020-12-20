@@ -1,6 +1,8 @@
 package com.example.fitshare;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
@@ -19,12 +21,15 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.fitshare.model.ModelFirebase;
 import com.example.fitshare.model.User;
@@ -145,11 +150,57 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 
-            parent.db.removeList(user.myLists.get(viewHolder.getAdapterPosition()));
-            user.myLists.remove(viewHolder.getAdapterPosition());
-            MyListAdapter.notifyDataSetChanged();
-            MyListAdapter.updateList();
-            listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
+
+
+            Button yes_btn;
+            Button cancel_btn;
+            TextView delete_txt;
+
+            Dialog dialog1 = new Dialog(parent);
+            dialog1.setContentView(R.layout.delete_dialog);
+            dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            Window window = dialog1.getWindow();
+            window.setGravity(Gravity.CENTER);
+
+            cancel_btn = dialog1.findViewById(R.id.cancel_btn);
+            yes_btn= dialog1.findViewById(R.id.yes_btn);
+            delete_txt= dialog1.findViewById(R.id.delete_txt);
+
+
+            if (parent.value.language.equals("English")) {
+                yes_btn.setText("yes");
+                delete_txt.setText("Are you sure you want to delete?");
+            }
+
+            yes_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    parent.db.removeList(user.myLists.get(viewHolder.getAdapterPosition()));
+                    user.myLists.remove(viewHolder.getAdapterPosition());
+                    MyListAdapter.notifyDataSetChanged();
+                    MyListAdapter.updateList();
+                    listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
+                    dialog1.cancel();
+                }
+            });
+            cancel_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    MyListAdapter.notifyDataSetChanged();
+                    MyListAdapter.updateList();
+                    listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
+                    dialog1.cancel();
+                }
+            });
+
+
+            dialog1.setCancelable(false);
+            window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+            dialog1.show();
+
+
         }
 
     };

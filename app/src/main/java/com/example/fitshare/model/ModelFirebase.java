@@ -2,6 +2,8 @@ package com.example.fitshare.model;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,7 +21,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +62,10 @@ public class ModelFirebase {
     public List<Products> getProductsList() {
         return productsList;
     }
+    public List<Products> getCopyproductsList() {
+        return CopyproductsList;
+    }
+
 
     public void newUser(String email) {
         myRef = database.getReference("Users");
@@ -332,7 +342,9 @@ public class ModelFirebase {
                     CopyproductsList.add(pro[0]);
 
                 }
-                CopyProduct(listID,listPosition);
+
+                    CopyProduct(listID,listPosition);
+
 
             }
 
@@ -575,41 +587,63 @@ public class ModelFirebase {
 
     }
 
-    public void CopyProduct(String listID,int listPosition)
-    {
+    public void CopyProduct(String listID,int listPosition) {
         DatabaseReference myRef;
+        Bitmap imageBitmap;
         myRef = database.getReference("AllLists");
         tempRef = database.getReference("Users");
         int i = productsList.size();
-        for (Products product: productsList) {
-            for (Products pro:CopyproductsList) {
-                if(pro.name.equals(product.name))
+        for (Products product : productsList) {
+            for (Products pro : CopyproductsList) {
+                if (pro.name.equals(product.name)) {
                     i--;
+                    break;
+                }
 
+
+            }
+            if (!product.imgUrl.equals("noImage")) {
+
+                ImageModel.copyImage(product.imgUrl, product.name + listID, new ImageModel.Listener() {
+                    @Override
+                    public void onSuccess(String url) {
+                        product.imgUrl = url;
+                        product.setSelected(false);
+                        myRef.child(listID).child("Products").child(product.name).setValue(product);
+                    }
+
+                    @Override
+                    public void onFail() {
+
+
+                    }
+                });
+
+            }
+            else {
+                product.setSelected(false);
+                myRef.child(listID).child("Products").child(product.name).setValue(product);
+            }
+
+            }
+
+
+            this.user.getMyLists().get(listPosition).listCount += i;
+            for (String userID : listUser) {
+                userID = cleanUserName(userID);
+                tempRef.child(userID).child("lists").child(listID).child("listCount").setValue(this.user.getMyLists().get(listPosition).listCount);
+
+            }
+            myRef.child(listID).child("listCount").setValue(this.user.getMyLists().get(listPosition).listCount);
 
         }
-            product.setSelected(false);
-            myRef.child(listID).child("Products").child(product.name).setValue(product);
+        public void changeLanguage (String language)
+        {
+            DatabaseReference myRef;
 
-
+            myRef = database.getReference("Users");
+            myRef.child(userID).child("language").setValue(language);
         }
 
-
-        this.user.getMyLists().get(listPosition).listCount += i;
-        for (String userID : listUser) {
-            userID = cleanUserName(userID);
-            tempRef.child(userID).child("lists").child(listID).child("listCount").setValue( this.user.getMyLists().get(listPosition).listCount);
-
-        }
-        myRef.child(listID).child("listCount").setValue(this.user.getMyLists().get(listPosition).listCount);
-
-    }
-    public void changeLanguage(String language)
-    {
-        DatabaseReference myRef;
-
-        myRef = database.getReference("Users");
-        myRef.child(userID).child("language").setValue(language);
-    }
 
 }

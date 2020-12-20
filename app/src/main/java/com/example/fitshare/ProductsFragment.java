@@ -216,11 +216,56 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-            parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()), parent.listID);
-            Products_list.remove(viewHolder.getAdapterPosition());
-            ProductsAdapter.notifyDataSetChanged();
-            ProductsAdapter.updateList();
-            listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+
+
+            Button yes_btn;
+            Button cancel_btn;
+            TextView delete_txt;
+
+            Dialog dialog1 = new Dialog(parent);
+            dialog1.setContentView(R.layout.delete_dialog);
+            dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            Window window = dialog1.getWindow();
+            window.setGravity(Gravity.CENTER);
+
+            cancel_btn = dialog1.findViewById(R.id.cancel_btn);
+            yes_btn= dialog1.findViewById(R.id.yes_btn);
+            delete_txt= dialog1.findViewById(R.id.delete_txt);
+
+
+            if (parent.value.language.equals("English")) {
+                yes_btn.setText("yes");
+                delete_txt.setText("Are you sure you want to delete?");
+            }
+
+            yes_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()), parent.listID);
+                    Products_list.remove(viewHolder.getAdapterPosition());
+                    ProductsAdapter.notifyDataSetChanged();
+                    ProductsAdapter.updateList();
+                    listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+                    dialog1.cancel();
+                }
+            });
+            cancel_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    ProductsAdapter.notifyDataSetChanged();
+                    ProductsAdapter.updateList();
+                    listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+                    dialog1.cancel();
+                }
+            });
+
+
+            dialog1.setCancelable(false);
+            window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+            dialog1.show();
+
+
         }
     };
 
@@ -248,16 +293,16 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         MyListAdapterProduct = new MyListAdapter(parent);
         List<myLists> myLists1 = new ArrayList<>();
         myLists1.addAll(ModelFirebase.instance.getUser().getMyLists());
-
-        myrcylist.setAdapter((RecyclerView.Adapter) MyListAdapterProduct);
         myLists1.remove(parent.CorrectList);
         MyListAdapterProduct.setList(myLists1);
+        myrcylist.setAdapter((RecyclerView.Adapter) MyListAdapterProduct);
         MyListAdapterProduct.setonItemClickListenr(new MyListAdapter.onItemClickListenr() {
             @Override
             public void onClick(int position) {
 
-                myLists myLists = ModelFirebase.instance.getUser().getMyLists().get(position);
-                ModelFirebase.instance.getCopyListData(myLists.listID, parent, position);
+                myLists myLists = myLists1.get(position);
+               int i= parent.value.getPosition(myLists);
+                ModelFirebase.instance.getCopyListData(myLists.listID, parent, i);
 
 
                 dialog1.cancel();

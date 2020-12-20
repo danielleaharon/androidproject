@@ -115,9 +115,9 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
             this.i= position;
             name.setText(myLists.get(position).ListName);
             if(parent.value.language.equals("Hebrew"))
-            product_count.setText("מספר מוצרים: " + ModelFirebase.instance.getUser().getMyLists().get(position).listCount);
+            product_count.setText("מספר מוצרים: " +myLists.get(position).listCount);
             else {
-                product_count.setText("Number of products: " + ModelFirebase.instance.getUser().getMyLists().get(position).listCount);
+                product_count.setText("Number of products: " + myLists.get(position).listCount);
             }
 
 

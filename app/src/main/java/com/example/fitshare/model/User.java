@@ -56,4 +56,16 @@ public class User {
         }
 
     }
+
+    public int getPosition(myLists myLists1)
+    {
+        int i=0;
+        for (myLists my: myLists) {
+            if(my.listID.equals(myLists1.listID)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
 }
