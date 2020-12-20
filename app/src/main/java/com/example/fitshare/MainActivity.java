@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     Email_edit.setError("email");
                     return;
                 }
+
                 if (TextUtils.isEmpty(Password)) {
                     Password_edit.setError("password");
                     return;
@@ -143,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
+                email=email.toLowerCase();
                 SignIn(email, Password);
 
 
@@ -169,9 +171,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, email+", welcome ", Toast.LENGTH_LONG).show();
 
 
-                    db.newUser(email);
+                    String email1=email.toLowerCase();
+                    db.newUser(email1);
 
-                    SignIn(email, pass);
+                    SignIn(email1, pass);
 
                 } else {
                     task.getException().printStackTrace();

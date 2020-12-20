@@ -98,17 +98,17 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
                 }
             });
             this.listener = listener;
-            mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            listener.onClick(position);
-                        }
-                    }
-                }
-            });
+//            mView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    if (listener != null) {
+//                        int position = getAdapterPosition();
+//                        if (position != RecyclerView.NO_POSITION) {
+//                            listener.onClick(position);
+//                        }
+//                    }
+//                }
+//            });
 
 
         }
@@ -116,10 +116,17 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
 
         public void bind(int position) {
 
-            this.i = position;
-            name.setText(UserList.get(position));
-            if(ModelFirebase.instance.getUser().email.equals(UserList.get(position)))
+
+
+                this.i = position;
+                name.setText(UserList.get(position));
+
+            if (ModelFirebase.instance.getUser().email.equals(UserList.get(position)))
                 delete_btn.setVisibility(View.INVISIBLE);
+
+
+
+
 
 
         }

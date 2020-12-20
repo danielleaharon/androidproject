@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Gravity;
@@ -21,6 +23,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -43,7 +46,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +56,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     public NavController navCtrl;
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final int GALLERY_REQUEST = 2;
     ModelFirebase db;
     User value;
     String listID = null;
@@ -89,7 +95,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         db = ModelFirebase.instance;
-
+        value = ModelFirebase.instance.getUser();
         language_btn = findViewById(R.id.language_btn);
         language_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,7 +107,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             }
         });
 
-        value = ModelFirebase.instance.getUser();
+
         ModelFirebase.instance.createAllUserList();
         floating_addList_btn = findViewById(R.id.floating_addList_btn);
         floating_addList_btn.setOnClickListener(new View.OnClickListener() {
@@ -233,7 +239,45 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         add_img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhoto();
+
+                Button camra_btn;
+                Button gallery_btn;
+                Dialog dialog2 = new Dialog(HomeActivity.this);
+                dialog2.setContentView(R.layout.gallery_or_camera_dialog);
+                dialog2.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+                Window window = dialog2.getWindow();
+                window.setGravity(Gravity.CENTER);
+
+
+                camra_btn=dialog2.findViewById(R.id.camra_btn);
+                gallery_btn=dialog2.findViewById(R.id.gallery_btn);
+
+                if(value.language.equals("English"))
+                {
+                    camra_btn.setText("Open a camera");
+                    gallery_btn.setText("Gallery");
+
+                }
+                camra_btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        takePhotoCamera();
+                        dialog2.cancel();
+                    }
+                });
+
+                gallery_btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        takePhotoGallery();
+                        dialog2.cancel();
+
+                    }
+                });
+                dialog2.setCancelable(true);
+                window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+                dialog2.show();
+
 
             }
         });
@@ -283,23 +327,54 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
 
     }
+    public static final int PICK_IMAGE = 1;
 
-    public void takePhoto() {
+    public void takePhotoCamera() {
+
 
         Intent tackPicIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (tackPicIntent.resolveActivity(this.getPackageManager()) != null) {
             startActivityForResult(tackPicIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
+    public void takePhotoGallery() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, GALLERY_REQUEST);
+
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            Bundle extras = data.getExtras();
-            imageBitmap = (Bitmap) extras.get("data");
-            imageDialog.setImageBitmap(imageBitmap);
 
+
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case GALLERY_REQUEST:
+                    try {
+                        final Uri imageUri = data.getData();
+                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                        imageBitmap = BitmapFactory.decodeStream(imageStream);
+                        imageDialog.setImageBitmap(imageBitmap);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case REQUEST_IMAGE_CAPTURE:
+                    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+                        Bundle extras = data.getExtras();
+                        imageBitmap = (Bitmap) extras.get("data");
+                        imageDialog.setImageBitmap(imageBitmap);
+
+                    }
+                    break;
+
+            }
+        }else {
+            Toast.makeText(this, "You haven't picked Image",Toast.LENGTH_LONG).show();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

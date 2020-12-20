@@ -460,11 +460,13 @@ public class ModelFirebase {
         StringBuilder temp = new StringBuilder();
         String[] tempList = email.split("@");
         String[] t = null;
-        if (tempList[0].contains("\\."))
+        if (tempList[0].contains("."))
             t = tempList[0].split("\\.");
         else if (tempList[0].contains("_"))
             t = tempList[0].split("_");
         else temp.append(tempList[0]);
+
+
         String[] PointList = null;
 
         if (t != null)

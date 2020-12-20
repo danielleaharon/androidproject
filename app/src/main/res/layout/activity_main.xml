@@ -38,39 +38,35 @@
         android:id="@+id/Email_edit"
         android:layout_width="225dp"
         android:layout_height="45dp"
-        android:layout_marginTop="196dp"
+        android:layout_marginTop="136dp"
         android:ems="10"
         android:hint="Email"
         android:imeOptions="actionDone"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.682"
+        app:layout_constraintHorizontal_bias="0.774"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
 
     <EditText
         android:id="@+id/Password_edit"
         android:layout_width="225dp"
         android:layout_height="45dp"
-        android:layout_marginTop="31dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Password"
         android:imeOptions="actionDone"
         android:inputType="textPassword"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.682"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Email_edit"
-        app:layout_constraintVertical_bias="0.002" />
+        app:layout_constraintEnd_toEndOf="@+id/Email_edit"
+        app:layout_constraintStart_toStartOf="@+id/Email_edit"
+        app:layout_constraintTop_toBottomOf="@+id/Email_edit" />
 
     <Button
         android:id="@+id/Sign_btn"
         android:layout_width="238dp"
         android:layout_height="41dp"
-        android:layout_marginStart="156dp"
-        android:layout_marginBottom="204dp"
-        android:background="@drawable/custom_rounded_corners2"
+        android:layout_marginTop="48dp"
+        android:background="@drawable/custom_rounded_corners3"
         android:color="#0B0A0A"
         android:fontFamily="@font/imprima"
         android:radius="100dp"
@@ -78,8 +74,9 @@
         android:text="Register / Login"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/Forgot_Password_btn"
+        app:layout_constraintHorizontal_bias="0.085"
+        app:layout_constraintStart_toStartOf="@+id/Forgot_Password_btn"
         app:layout_constraintTop_toBottomOf="@+id/Forgot_Password_btn" />
 
     <ImageView
@@ -104,6 +101,7 @@
         android:id="@+id/Forgot_Password_btn"
         android:layout_width="191dp"
         android:layout_height="44dp"
+        android:layout_marginTop="8dp"
         android:background="#00FFFFFF"
         android:text="Forgot Password "
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"

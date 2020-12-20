@@ -37,8 +37,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="184dp"
         android:layout_marginTop="152dp"
+        android:layout_marginEnd="10dp"
         android:clickable="true"
         android:src="@drawable/addimageicon"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/imageDailog"
         app:layout_constraintTop_toTopOf="@+id/imageDailog" />
 
