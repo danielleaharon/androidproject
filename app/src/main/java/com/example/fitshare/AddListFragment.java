@@ -57,7 +57,6 @@ public class AddListFragment extends Fragment {
     }
 
 
-    // TODO: Rename and change types and number of parameters
     public static AddListFragment newInstance(String param1, String param2) {
         AddListFragment fragment = new AddListFragment();
         Bundle args = new Bundle();

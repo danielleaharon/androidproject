@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Fitshare</string>
-    <!-- TODO: Remove or change this placeholder text -->
 
     <string name="listNameHebrew"><b>שם הרשימה</b></string>
     <string name="listFriendHebrew"><b>חברי הרשימה</b></string>
