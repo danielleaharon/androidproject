@@ -104,6 +104,7 @@ public class AddListFragment extends Fragment {
         Button add_friend_btn = view.findViewById(R.id.add_friend_btn);
         TextView listName_txt = view.findViewById(R.id.listName_txt);
         TextView listFriend_txt = view.findViewById(R.id.listFriend_txt);
+        listName_edit = view.findViewById(R.id.listName_edit);
 
         if (parent.value.language.equals("Hebrew")) {
             listName_txt.setText(R.string.listNameHebrew);
@@ -113,189 +114,170 @@ public class AddListFragment extends Fragment {
         } else {
             listName_txt.setText(R.string.listNameEnglish);
             listFriend_txt.setText(R.string.listFriendEnglish);
-            add_friend_btn.setText("Add new friend");
+            add_friend_btn.setText(R.string.addFriendEnglish);
         }
-        parent.save_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        parent.save_btn.setOnClickListener(v -> {
 
-                String listName = listName_edit.getText().toString().trim();
+            String listName = listName_edit.getText().toString().trim();
+            if (parent.value.language.equals("Hebrew")) {
+                if (TextUtils.isEmpty(listName)) {
+                    listName_edit.setError("צריך שם לרשימה");
+                    return;
+
+
+                }
+                for (myLists name : parent.value.getMyLists()) {
+                    if (name.ListName.equals(listName)) {
+                        if (parent.CorrectList != null)
+                            if (parent.CorrectList.ListName.equals(listName))
+                                break;
+                        listName_edit.setError("השם תפוס");
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                if (TextUtils.isEmpty(listName)) {
+                    listName_edit.setError("Need a name for the list");
+                    return;
+
+
+                }
+                for (myLists name : parent.value.getMyLists()) {
+                    if (name.ListName.equals(listName)) {
+                        if (parent.CorrectList != null)
+                            if (parent.CorrectList.ListName.equals(listName))
+                                break;
+                        listName_edit.setError("The name is busy");
+                        return;
+                    }
+                }
+
+            }
+                if (parent.CorrectList != null) {
+                    if (!parent.CorrectList.ListName.equals(listName))
+                        parent.CorrectList.ListName = listName;
+                    ModelFirebase.instance.UpdateListData(parent.CorrectList, parent.ListPosition);
+                    for (String email : user) {
+                        parent.addUserToList(email);
+                    }
+
+
+                } else {
+                    ModelFirebase.instance.newList(listName, parent.value.id, user);
+                }
+            hideKeyboard(v);
+                parent.navCtrl.popBackStack();
+
+
+            });
+
+        listName_edit.setOnKeyListener((v, keyCode, event) -> {
+
+            if (event.getAction() == KeyEvent.ACTION_UP) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                    case KeyEvent.KEYCODE_ENTER:
+                        hideKeyboard(v);
+
+                        return true;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        });
+
+
+        add_friend_btn.setOnClickListener( v -> {
+
+            EditText user_edit;
+
+            Dialog dialog1 = new Dialog(parent);
+
+            dialog1.setContentView(R.layout.add_user);
+            dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            Window window = dialog1.getWindow();
+            window.setGravity(Gravity.CENTER);
+
+            user_edit = dialog1.findViewById(R.id.user_name_edit);
+            Button cancel_btn = dialog1.findViewById(R.id.cancel_btn);
+
+            cancel_btn.setOnClickListener(v1 -> dialog1.cancel());
+            Button ok_btn = dialog1.findViewById(R.id.ok_btn);
+            ok_btn.setOnClickListener( v12 -> {
+                userName = user_edit.getText().toString().trim();
                 if (parent.value.language.equals("Hebrew")) {
-                    if (TextUtils.isEmpty(listName)) {
-                        listName_edit.setError("צריך שם לרשימה");
+                    if (TextUtils.isEmpty(userName)) {
+                        user_edit.setError("צריך שם משתמש");
                         return;
-
-
                     }
-                    for (myLists name : parent.value.getMyLists()) {
-                        if (name.ListName.equals(listName)) {
-                            if (parent.CorrectList != null)
-                                if (parent.CorrectList.ListName.equals(listName))
-                                    break;
-                            listName_edit.setError("השם תפוס");
+                    if (parent.value.email.equals(userName)) {
+                        user_edit.setError("אתה לא יכול להוסיף את עצמך!");
+                        return;
+                    }
+
+                    if (ModelFirebase.instance.CheckUserExists(userName)) {
+                        if (user.contains(userName)) {
+                            user_edit.setError("משתמש כבר קיים ברשימה");
                             return;
                         }
-                    }
-                }
-                else
-                {
-                    if (TextUtils.isEmpty(listName)) {
-                        listName_edit.setError("Need a name for the list");
-                        return;
+                        parent.setUserDailog(userName);
 
 
-                    }
-                    for (myLists name : parent.value.getMyLists()) {
-                        if (name.ListName.equals(listName)) {
-                            if (parent.CorrectList != null)
-                                if (parent.CorrectList.ListName.equals(listName))
-                                    break;
-                            listName_edit.setError("The name is busy");
-                            return;
+                        // }
+                        if (parent.CorrectList != null) {
+                            user.add(userName);
+                            addListAdapter.notifyDataSetChanged();
+                            addListAdapter.updateList(user);
+                            listView.setAdapter( addListAdapter);
                         }
-                    }
-
-                }
-                    if (parent.CorrectList != null) {
-                        if (!parent.CorrectList.ListName.equals(listName))
-                            parent.CorrectList.ListName = listName;
-                        ModelFirebase.instance.UpdateListData(parent.CorrectList, parent.ListPosition);
-                        for (String email : user) {
-                            parent.addUserToList(email);
-                        }
-
-
-                    } else {
-                        ModelFirebase.instance.newList(listName, parent.value.id, user);
-                    }
-                hideKeyboard(v);
-                    parent.navCtrl.popBackStack();
-
-
-                }
-
-
-        });
-        listName_edit = view.findViewById(R.id.listName_edit);
-        listName_edit.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-
-                if (event.getAction() == KeyEvent.ACTION_UP) {
-                    switch (keyCode) {
-                        case KeyEvent.KEYCODE_DPAD_CENTER:
-                        case KeyEvent.KEYCODE_ENTER:
-                            hideKeyboard(v);
-
-                            return true;
-                        default:
-                            break;
-                    }
-                }
-                return false;
-            }
-        });
-
-
-        add_friend_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                EditText user_edit;
-
-                Dialog dialog1 = new Dialog(parent);
-
-                dialog1.setContentView(R.layout.add_user);
-                dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-                Window window = dialog1.getWindow();
-                window.setGravity(Gravity.CENTER);
-
-                user_edit = dialog1.findViewById(R.id.user_name_edit);
-                Button cancel_btn = dialog1.findViewById(R.id.cancel_btn);
-
-                cancel_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
                         dialog1.cancel();
+                    } else {
+                        user_edit.setError("משתמש לא קיים");
+                        return;
                     }
-                });
-                Button ok_btn = dialog1.findViewById(R.id.ok_btn);
-                ok_btn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        userName = user_edit.getText().toString().trim();
-                        if (parent.value.language.equals("Hebrew")) {
-                            if (TextUtils.isEmpty(userName)) {
-                                user_edit.setError("צריך שם משתמש");
-                                return;
-                            }
-                            if (parent.value.email.equals(userName)) {
-                                user_edit.setError("אתה לא יכול להוסיף את עצמך!");
-                                return;
-                            }
-
-                            if (ModelFirebase.instance.CheckUserExists(userName)) {
-                                if (user.contains(userName)) {
-                                    user_edit.setError("משתמש כבר קיים ברשימה");
-                                    return;
-                                }
-                                parent.setUserDailog(userName);
-
-
-                                // }
-                                if (parent.CorrectList != null) {
-                                    user.add(userName);
-                                    addListAdapter.notifyDataSetChanged();
-                                    addListAdapter.updateList(user);
-                                    listView.setAdapter((RecyclerView.Adapter) addListAdapter);
-                                }
-                                dialog1.cancel();
-                            } else {
-                                user_edit.setError("משתמש לא קיים");
-                                return;
-                            }
-                        }
-                        else {
-                            if (TextUtils.isEmpty(userName)) {
-                                user_edit.setError("Need a username");
-                                return;
-                            }
-                            if (parent.value.email.equals(userName)) {
-                                user_edit.setError("You can not add yourself!");
-                                return;
-                            }
-
-                            if (ModelFirebase.instance.CheckUserExists(userName)) {
-                                if (user.contains(userName)) {
-                                    user_edit.setError("A user already exists in the list");
-                                    return;
-                                }
-                                parent.setUserDailog(userName);
-
-
-                                // }
-                                if (parent.CorrectList != null) {
-                                    user.add(userName);
-                                    addListAdapter.notifyDataSetChanged();
-                                    addListAdapter.updateList(user);
-                                    listView.setAdapter((RecyclerView.Adapter) addListAdapter);
-                                }
-                                dialog1.cancel();
-                            } else {
-                                user_edit.setError("User does not exist");
-                                return;
-                            }
-                        }
-
+                }
+                else {
+                    if (TextUtils.isEmpty(userName)) {
+                        user_edit.setError("Need a username");
+                        return;
+                    }
+                    if (parent.value.email.equals(userName)) {
+                        user_edit.setError("You can not add yourself!");
+                        return;
                     }
 
-                });
+                    if (ModelFirebase.instance.CheckUserExists(userName)) {
+                        if (user.contains(userName)) {
+                            user_edit.setError("A user already exists in the list");
+                            return;
+                        }
+                        parent.setUserDailog(userName);
 
 
-                dialog1.setCancelable(true);
-                window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
-                dialog1.show();
+                        // }
+                        if (parent.CorrectList != null) {
+                            user.add(userName);
+                            addListAdapter.notifyDataSetChanged();
+                            addListAdapter.updateList(user);
+                            listView.setAdapter( addListAdapter);
+                        }
+                        dialog1.cancel();
+                    } else {
+                        user_edit.setError("User does not exist");
+                       // return;
+                    }
+                }
 
-            }
+            });
+
+
+            dialog1.setCancelable(true);
+            window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
+            dialog1.show();
+
         });
         listView = view.findViewById(R.id.friend_ryc);
         listView.setHasFixedSize(true);
@@ -311,20 +293,20 @@ public class AddListFragment extends Fragment {
         }
         addListAdapter = new AddListAdapter(parent, user);
 
-        listView.setAdapter((RecyclerView.Adapter) addListAdapter);
-        addListAdapter.setonItemClickListenr(new AddListAdapter.onItemClickListenr() {
-            @Override
-            public void onClick(int position) {
-
-
-            }
-        });
+        listView.setAdapter(addListAdapter);
+//        addListAdapter.setonItemClickListenr(new AddListAdapter.onItemClickListenr() {
+//            @Override
+//            public void onClick(int position) {
+//
+//
+//            }
+//        });
 
         return view;
     }
 
     public void hideKeyboard(View view) {
-        InputMethodManager inputMethodManager = (InputMethodManager) parent.getSystemService(parent.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager = (InputMethodManager) parent.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
