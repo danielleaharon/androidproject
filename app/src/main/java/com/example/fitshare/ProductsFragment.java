@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelProductDao;
 import com.example.fitshare.model.Products;
 import com.example.fitshare.model.myLists;
 
@@ -66,13 +68,15 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
-        this.Products_list.addAll(parent.db.getProductsList());
+
+
 
 
     }
 
 
     public ProductsFragment() {
+
     }
 
 
@@ -96,13 +100,23 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        parent.RefreshList();
-        parent.setTitle(parent.ListName);
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        parent.RefreshList();
+//        parent.setTitle(parent.ListName);
+//        Log.d("TAG", "onPause:" + parent.ListName);
+//    }
 
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        parent.RefreshList();
+//        parent.setTitle(parent.ListName);
+//        Log.d("TAG", "onResume:" + parent.ListName);
+//
+//
+//    }
 
 
     @SuppressLint("RestrictedApi")
@@ -116,6 +130,8 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         //put name on toolbar
         parent.setTitle(parent.ListName);
+        Log.d("TAG", "onCreateView:" + parent.ListName);
+
         parent.save_btn.setVisibility(View.INVISIBLE);
         parent.logout_btn.setVisibility(View.INVISIBLE);
         parent.addList_btn.setVisibility(View.VISIBLE);
@@ -124,7 +140,12 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         parent.floating_addList_btn.hide();
         parent.addList_btn.setBackgroundResource(R.drawable.editicon);
 
-
+        ModelProductDao.instance.getAllProducts(parent.listID, new ModelProductDao.GetAllProductsListener() {
+            @Override
+            public void onComplete(List<Products> data) {
+                Products_list=(data);
+            }
+        });
         parent.copy_list_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -139,7 +160,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         listView.setLayoutManager(layoutManger);
         new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
-        ProductsAdapter = new ProductsAdapter(parent, Products_list, this);
+        ProductsAdapter = new ProductsAdapter(parent);
         listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
         ProductsAdapter.setonItemClickListenr(new ProductsAdapter.onItemClickListenr() {
             @Override
@@ -154,7 +175,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         newListName_edit = view.findViewById(R.id.newListName_edit);
 
-        if (parent.value.language.equals("English"))
+        if (parent.value.getLanguage().equals("English"))
             newListName_edit.setHint("Add a new item..");
 
 
@@ -198,7 +219,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         Products_list.sort(new Comparator<Products>() {
             @Override
             public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
-                if (o2.selected) return -1;
+                if (o2.isSelected()) return -1;
                 return 1;
             }
         });
@@ -229,11 +250,11 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             window.setGravity(Gravity.CENTER);
 
             cancel_btn = dialog1.findViewById(R.id.cancel_btn);
-            yes_btn= dialog1.findViewById(R.id.yes_btn);
-            delete_txt= dialog1.findViewById(R.id.delete_txt);
+            yes_btn = dialog1.findViewById(R.id.yes_btn);
+            delete_txt = dialog1.findViewById(R.id.delete_txt);
 
 
-            if (parent.value.language.equals("English")) {
+            if (parent.value.getLanguage().equals("English")) {
                 yes_btn.setText("yes");
                 delete_txt.setText("Are you sure you want to delete?");
             }
@@ -241,10 +262,10 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             yes_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    parent.db.removeProducts(Products_list.get(viewHolder.getAdapterPosition()), parent.listID);
-                    Products_list.remove(viewHolder.getAdapterPosition());
-                    ProductsAdapter.notifyDataSetChanged();
-                    ProductsAdapter.updateList();
+                    Products products=Products_list.get(viewHolder.getAdapterPosition());
+                    ModelFirebase.instance.removeProducts(products, parent.listID,viewHolder.getAdapterPosition());
+                  //  Products_list.remove(viewHolder.getAdapterPosition());
+                    ProductsAdapter.reloadData();
                     listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
                     dialog1.cancel();
                 }
@@ -253,8 +274,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 @Override
                 public void onClick(View v) {
 
-                    ProductsAdapter.notifyDataSetChanged();
-                    ProductsAdapter.updateList();
+                    ProductsAdapter.reloadData();
                     listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
                     dialog1.cancel();
                 }
@@ -276,6 +296,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         dialog1.setContentView(R.layout.copy_dialog);
         dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog1.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_3;
         Window window = dialog1.getWindow();
         window.setGravity(Gravity.CENTER);
 
@@ -283,7 +304,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         TextView copy_txt = dialog1.findViewById(R.id.copy_txt);
 
-        if (parent.value.language.equals("English"))
+        if (parent.value.getLanguage().equals("English"))
             copy_txt.setText("Which list to copy?");
 
         myrcylist.setHasFixedSize(true);
@@ -292,17 +313,20 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         MyListAdapterProduct = new MyListAdapter(parent);
         List<myLists> myLists1 = new ArrayList<>();
-        myLists1.addAll(ModelFirebase.instance.getUser().getMyLists());
-        myLists1.remove(parent.CorrectList);
+
+
+        myLists1.addAll(parent.AllMyLists);
+        myLists1.remove(parent.ListPosition);
         MyListAdapterProduct.setList(myLists1);
         myrcylist.setAdapter((RecyclerView.Adapter) MyListAdapterProduct);
+
         MyListAdapterProduct.setonItemClickListenr(new MyListAdapter.onItemClickListenr() {
             @Override
             public void onClick(int position) {
 
                 myLists myLists = myLists1.get(position);
-               int i= parent.value.getPosition(myLists);
-                ModelFirebase.instance.getCopyListData(myLists.listID, parent, i);
+                int i = parent.getPosition(myLists);
+                ModelFirebase.instance.getCopyListData(myLists.getListID(), parent, i);
 
 
                 dialog1.cancel();
@@ -336,6 +360,8 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         dialog1.setContentView(R.layout.amount_dialog);
         dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog1.getWindow().getAttributes().windowAnimations = R.style.DialogTheme;
+
         Window window = dialog1.getWindow();
         window.setGravity(Gravity.CENTER);
 
@@ -364,7 +390,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                     amount_edit.setText(String.valueOf(finalValue));
                     amount_edit.setError(null);
                 } else {
-                    if (parent.value.language.equals("English")) {
+                    if (parent.value.getLanguage().equals("English")) {
                         amount_edit.setError("Minimum");
 
                     } else
@@ -375,18 +401,19 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             }
         });
         amount_edit = dialog1.findViewById(R.id.amount_edit);
-        String[] amountArr = products.Amount.split(" ");
+        String[] amountArr = products.getAmount().split(" ");
         String amount = amountArr[0];
         amount_edit.setText(amount);
-        if (parent.value.language.equals("Hebrew")) {
-            if(amountArr[1].equals("Units"))
+        if (parent.value.getLanguage().equals("Hebrew")) {
+            if (amountArr[1].equals("Units"))
                 popup_btn.setText("יח׳");
-            else if(amountArr[1].equals("Gm"))
+            else if (amountArr[1].equals("Gm"))
                 popup_btn.setText("גרם");
             else popup_btn.setText("קילוגרם");
 
-        } else
+        } else {
             popup_btn.setText(amountArr[1]);
+        }
         amount_popup = amountArr[1];
 
         if (amount_popup.equals("Units")) {
@@ -415,22 +442,19 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 String[] amountArr = amount_edit.getText().toString().split(" ");
                 String amount = amountArr[0];
                 if (TextUtils.isEmpty(amount)) {
-                    if (parent.value.language.equals("English")) {
-                        amount_edit.setText("1");
+                    amount_edit.setText("1");
+                    amount_popup = "Units";
+                    if (parent.value.getLanguage().equals("English"))
                         popup_btn.setText("Units");
-                        amount_popup = "Units";
-                        return;
-                    } else {
-                        amount_edit.setText("1");
-                        popup_btn.setText("יח׳");
-                        amount_popup = "Units";
-                        return;
-                    }
+
+                    else popup_btn.setText("יח׳");
+
+                    return;
                 }
 
 
                 String new_amount = amount + " " + amount_popup;
-                products.Amount = new_amount;
+                products.setAmount(new_amount);
                 ModelFirebase.instance.UpdateProducts(products, parent.listID);
 
 
@@ -458,7 +482,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void showPopup(View view) {
         PopupMenu popup = new PopupMenu(parent, view);
         popup.setOnMenuItemClickListener(this);
-        if (parent.value.language.equals("Hebrew"))
+        if (parent.value.getLanguage().equals("Hebrew"))
             popup.inflate(R.menu.product_dimensions_popup_hebrew);
         else popup.inflate(R.menu.product_dimensions_popup_english);
         popup.show();
@@ -469,61 +493,46 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public boolean onMenuItemClick(MenuItem item) {
 
 
-        if (parent.value.language.equals("Hebrew")) {
+        switch (item.getItemId()) {
 
-            switch (item.getItemId()) {
+            case R.id.unitsH:
+                popup_btn.setText("יח׳");
+                amount_popup = "Units";
 
-                case R.id.units:
-                    popup_btn.setText("יח׳");
-                    amount_popup = "Units";
-
-                    break;
-                case R.id.gram:
-                    popup_btn.setText("גרם");
-                    amount_popup = "Gm";
-                    break;
+                break;
+            case R.id.gramH:
+                popup_btn.setText("גרם");
+                amount_popup = "Gm";
+                break;
 
 
-                case R.id.kilogram:
-                    popup_btn.setText("קילוגרם");
-                    amount_popup = "Kg";
-                    break;
+            case R.id.kilogramH:
+                popup_btn.setText("קילוגרם");
+                amount_popup = "Kg";
+                break;
+
+            case R.id.unitsE:
+                popup_btn.setText("Units");
+                amount_popup = "Units";
+
+                break;
+            case R.id.gramE:
+                popup_btn.setText("Gm");
+                amount_popup = "Gm";
+                break;
 
 
-                default:
+            case R.id.kilogramE:
+                popup_btn.setText("Kg");
+                amount_popup = "Kg";
+                break;
+            default:
 
-                    return false;
-            }
-
-        } else {
-
-            switch (item.getItemId()) {
-
-                case R.id.units:
-                    popup_btn.setText("Units");
-                    amount_popup = "Units";
-
-                    break;
-                case R.id.gram:
-                    popup_btn.setText("Gm");
-                    amount_popup = "Gm";
-                    break;
-
-
-                case R.id.kilogram:
-                    popup_btn.setText("Kg");
-                    amount_popup = "Kg";
-                    break;
-
-
-                default:
-
-                    return false;
-            }
-
-
+                return false;
         }
-        if (amount_popup.equals("Units׳")) {
+
+
+        if (amount_popup.equals("Units")) {
             amount_edit.setEnabled(false);
             amount_add_btn.setVisibility(View.VISIBLE);
             amount_remove_btn.setVisibility(View.VISIBLE);
@@ -539,13 +548,13 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void addProductwithEnter() {
         String listName = newListName_edit.getText().toString().trim();
         Products Products;
-        if (parent.value.language.equals("Hebrew")) {
+        if (parent.value.getLanguage().equals("Hebrew")) {
             if (TextUtils.isEmpty(listName)) {
                 newListName_edit.setError("שם פריט?");
                 return;
             }
             for (Products name : Products_list) {
-                if (name.name.equals(listName)) {
+                if (name.getName().equals(listName)) {
                     newListName_edit.setError("הפריט כבר קיים");
                     return;
                 }
@@ -556,25 +565,24 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 return;
             }
             for (Products name : Products_list) {
-                if (name.name.equals(listName)) {
+                if (name.getName().equals(listName)) {
                     newListName_edit.setError("The item already exists");
                     return;
                 }
             }
         }
-        Products = new Products(listName, false, "noImage", "1 Units");
+        Products = new Products(listName, false, "noImage", "1 Units",parent.listID);
 
-        Products_list.add(Products);
+       // Products_list.add(Products);
 
 
-        parent.db.newProducts(Products, parent.listID, parent.ListPosition);
+        ModelFirebase.instance.newProducts(Products, parent.listID, parent.ListPosition);
 
         newListName_edit.getText().clear();
         newListName_edit.requestFocus();
 
 
-        ProductsAdapter.notifyDataSetChanged();
-        ProductsAdapter.updateList();
+        ProductsAdapter.reloadData();
         listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
 
 
@@ -595,9 +603,10 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void refreshList() {
 
-        ModelFirebase.instance.refreshProductList(parent.listID);
-        ProductsAdapter.notifyDataSetChanged();
-        ProductsAdapter.updateList();
+//        ModelFirebase.instance.refreshProductList(parent.listID);
+//        ProductsAdapter.notifyDataSetChanged();
+//        ProductsAdapter.updateList();
+        ProductsAdapter.reloadData();
         listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
         swipeRefreshLayout.setRefreshing(false);
 

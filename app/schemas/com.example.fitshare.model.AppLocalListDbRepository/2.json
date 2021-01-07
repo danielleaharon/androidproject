@@ -1,0 +1,52 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "ca3399f123e7c3c426761c2b892cf06f",
+    "entities": [
+      {
+        "tableName": "myLists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listID` TEXT NOT NULL, `ListName` TEXT, `listCount` INTEGER NOT NULL, `User` TEXT, PRIMARY KEY(`listID`))",
+        "fields": [
+          {
+            "fieldPath": "listID",
+            "columnName": "listID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ListName",
+            "columnName": "ListName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "listCount",
+            "columnName": "listCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "User",
+            "columnName": "User",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "listID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ca3399f123e7c3c426761c2b892cf06f')"
+    ]
+  }
+}

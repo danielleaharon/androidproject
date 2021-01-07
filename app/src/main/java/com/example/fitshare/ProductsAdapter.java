@@ -1,42 +1,32 @@
 package com.example.fitshare;
 
-import android.app.ActionBar;
+
 import android.app.Activity;
-import android.app.Dialog;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+
 import android.os.Build;
-import android.text.TextUtils;
+
 import android.util.Log;
-import android.view.Gravity;
+
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.Button;
-import android.widget.CheckBox;
+
 import android.widget.CompoundButton;
-import android.widget.EditText;
+
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import androidx.annotation.RequiresApi;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.DialogFragment;
+
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fitshare.model.ImageModel;
 import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelProductDao;
 import com.example.fitshare.model.Products;
-import com.example.fitshare.model.myLists;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -54,25 +44,38 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
     LayoutInflater inflater;
     static ProductsFragment productsFragment;
     static List<Products> Products_list = new ArrayList<>();
-    boolean onBind = false;
+
     ImageView image;
 
     private onItemClickListenr listener;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public ProductsAdapter(HomeActivity activity, List<Products> Products_list, ProductsFragment productsFragment) {
+    public ProductsAdapter(HomeActivity activity) {
         this.activity = activity;
         parent = activity;
-        this.productsFragment = productsFragment;
-        this.Products_list = Products_list;
-        SortProducts();
+   //     this.productsFragment = productsFragment;
+//        this.Products_list = Products_list;
+        reloadData();
+
         this.inflater = activity.getLayoutInflater();
     }
 
     void setonItemClickListenr(onItemClickListenr listener) {
         this.listener = (onItemClickListenr) listener;
     }
+    void reloadData(){
 
+        ModelProductDao.instance.getAllProducts(parent.listID,new ModelProductDao.GetAllProductsListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
+            @Override
+            public void onComplete(List<Products> data) {
+                Products_list = data;
+                SortProducts();
+                notifyDataSetChanged();
+            }
+
+        });
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -94,23 +97,14 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
         return Products_list.size();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void updateList() {
 
-
-        this.Products_list = ModelFirebase.instance.getProductsList();
-        SortProducts();
-        notifyDataSetChanged();
-
-
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void SortProducts() {
         Products_list.sort(new Comparator<Products>() {
             @Override
             public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
-                if (o2.selected) return -1;
+                if (o2.isSelected()) return -1;
                 return 1;
             }
         });
@@ -137,7 +131,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
             image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    parent.openImage(Products_list.get(i), parent.listID, Products_list.get(i).imgUrl);
+                    parent.openImage(Products_list.get(i), parent.listID, Products_list.get(i).getImgUrl());
                 }
             });
 
@@ -151,13 +145,15 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
                     if (isChecked) {
 
                         Products_list.get(i).setSelected(true);
-                        parent.db.UpdateProducts(Products_list.get(i), parent.listID);
+                        ModelFirebase.instance.UpdateProducts(Products_list.get(i), parent.listID);
+                        reloadData();
 
                     } else {
 
 
                         Products_list.get(i).setSelected(false);
-                        parent.db.UpdateProducts(Products_list.get(i), parent.listID);
+                        ModelFirebase.instance.UpdateProducts(Products_list.get(i), parent.listID);
+                        reloadData();
 
 
                     }
@@ -187,16 +183,16 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
         public void bind(int position) {
 
             this.i = position;
-            name.setText(Products_list.get(position).name);
+            name.setText(Products_list.get(position).getName());
             CheckBox.setChecked(Products_list.get(position).isSelected());
 
-            String[] amountArr = Products_list.get(position).Amount.split(" ");
+            String[] amountArr = Products_list.get(position).getAmount().split(" ");
             String amount1 = amountArr[0];
             String amount2 = amountArr[1];
-            if (parent.value.language.equals("Hebrew")) {
-                if(amount2.equals("Units"))
-                 amount2 = "יח׳";
-                else if(amount2.equals("Gm"))
+            if (parent.value.getLanguage().equals("Hebrew")) {
+                if (amount2.equals("Units"))
+                    amount2 = "יח׳";
+                else if (amount2.equals("Gm"))
                     amount2 = "גרם";
                 else amount2 = "קילוגרם";
 
@@ -204,8 +200,8 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
 
             String new_amount = amount1 + " " + amount2;
             Amount_product.setText(new_amount);
-            if (!Products_list.get(position).imgUrl.equals("noImage")) {
-                Picasso.get().load(Products_list.get(position).imgUrl).into(image);
+            if (!Products_list.get(position).getImgUrl().equals("noImage")) {
+                Picasso.get().load(Products_list.get(position).getImgUrl()).into(image);
 
             }
 

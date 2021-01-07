@@ -1,6 +1,5 @@
 package com.example.fitshare;
 
-import android.animation.Animator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
@@ -12,15 +11,10 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,17 +31,15 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.fitshare.model.ImageModel;
 import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelListDao;
+import com.example.fitshare.model.ModelUserDao;
 import com.example.fitshare.model.Products;
 import com.example.fitshare.model.User;
 import com.example.fitshare.model.myLists;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.squareup.picasso.Picasso;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +49,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int GALLERY_REQUEST = 2;
-    ModelFirebase db;
+
     User value;
     String listID = null;
     String ListName;
@@ -75,6 +67,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     Button language_btn;
     List<String> userDailog = new ArrayList<>();
 
+    List<myLists> AllMyLists= new ArrayList<>();
     FloatingActionButton floating_addList_btn;
 
 
@@ -94,7 +87,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        db = ModelFirebase.instance;
+      //  db = ModelFirebase.instance;
         value = ModelFirebase.instance.getUser();
         language_btn = findViewById(R.id.language_btn);
         language_btn.setOnClickListener(new View.OnClickListener() {
@@ -107,6 +100,12 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             }
         });
 
+//        ModelListDao.instance.getAllMyLists(value.getId(),new ModelListDao.GetAllMyListsListener() {
+//            @Override
+//            public void onComplete(List<myLists> data) {
+//                AllMyLists=data;
+//            }
+//        });
 
         ModelFirebase.instance.createAllUserList();
         floating_addList_btn = findViewById(R.id.floating_addList_btn);
@@ -116,8 +115,8 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
 
                 userDailog = new ArrayList<>();
-                userDailog.add(value.email);
-                NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
+                userDailog.add(value.getEmail());
+                NavDirections directions = MylistFragmentDirections.actionMylistFragmentToAddListFragment();
                 navCtrl.navigate(directions);
 
 
@@ -143,7 +142,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                     ModelFirebase.instance.getUserOfList(listID);
                 else {
                     userDailog = new ArrayList<>();
-                    userDailog.add(value.email);
+                    userDailog.add(value.getEmail());
                     NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
                     navCtrl.navigate(directions);
                 }
@@ -164,7 +163,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
     public void OpenProductList() {
 
-        NavDirections directions = MylistFragmentDirections.actionGlobalProductsFragment();
+        NavDirections directions = MylistFragmentDirections.actionMylistFragmentToProductsFragment();
         navCtrl.navigate(directions);
     }
 
@@ -172,19 +171,26 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         this.listID = ListId;
         this.ListName = listName;
         this.ListPosition = position;
-        CorrectList = db.getUser().getMyLists().get(position);
+        ModelListDao.instance.getAllMyLists(value.getId(), new ModelListDao.GetAllMyListsListener() {
+            @Override
+            public void onComplete(List<myLists> data) {
+                AllMyLists=data;
+                CorrectList = AllMyLists.get(position);
+            }
+        });
+
         ModelFirebase.instance.getListData(ListId, this, position);
 
 
     }
 
-    public void RefreshList() {
-        myLists myLists = db.getUser().getMyLists().get(this.ListPosition);
-        this.ListName = myLists.ListName;
-
-
-
-    }
+//    public void RefreshList() {
+//        myLists myLists = db.getUser().getMyLists().get(this.ListPosition);
+//        this.ListName = myLists.getListName();
+//
+//
+//
+//    }
 
 
     public void addUserToList(String Userid) {
@@ -225,13 +231,14 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
         dialog1.setContentView(R.layout.camar_dailog);
         dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog1.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation_2;
         Window window = dialog1.getWindow();
         window.setGravity(Gravity.CENTER);
 
 
         imageDialog = dialog1.findViewById(R.id.imageDailog);
-        if (!product.imgUrl.equals("noImage"))
-            Picasso.get().load(product.imgUrl).into(imageDialog);
+        if (!product.getImgUrl().equals("noImage"))
+            Picasso.get().load(product.getImgUrl()).into(imageDialog);
         else imageDialog.setImageResource(R.drawable.nophoto);
 
 
@@ -252,7 +259,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 camra_btn=dialog2.findViewById(R.id.camra_btn);
                 gallery_btn=dialog2.findViewById(R.id.gallery_btn);
 
-                if(value.language.equals("English"))
+                if(value.getLanguage().equals("English"))
                 {
                     camra_btn.setText("Open a camera");
                     gallery_btn.setText("Gallery");
@@ -289,12 +296,12 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             public void onClick(View v) {
 
                 if (imageBitmap != null) {
-                    ImageModel.uploadImage(imageBitmap, product.name + listID, new ImageModel.Listener() {
+                    ImageModel.uploadImage(imageBitmap, product.getName() + listID, new ImageModel.Listener() {
                         @Override
                         public void onSuccess(String url) {
 
 
-                            product.setImage(url);
+                            product.setImgUrl(url);
                             ModelFirebase.instance.UpdateProducts(product, listID);
                             dialog1.cancel();
 
@@ -384,13 +391,13 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         switch (item.getItemId()) {
 
             case R.id.hebrew:
-                value.language = "Hebrew";
+                value.setLanguage( "Hebrew");
                 ModelFirebase.instance.changeLanguage("Hebrew");
                 setTitle("רשימות");
 
                 break;
             case R.id.english:
-                value.language = "English";
+                value.setLanguage("English");
                 ModelFirebase.instance.changeLanguage("English");
                 setTitle("Lists");
                 break;
@@ -418,6 +425,28 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
       return   this.listID;
 
+    }
+    public void RefreshList()
+    {
+        ModelListDao.instance.getAllMyLists(value.getId(), new ModelListDao.GetAllMyListsListener() {
+            @Override
+            public void onComplete(List<myLists> data) {
+                AllMyLists=data;
+            }
+        });
+    }
+    public int getPosition(myLists myLists1)
+    {
+        int i=0;
+
+
+        for (myLists my: AllMyLists) {
+            if(my.getListID().equals(myLists1.getListID())) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
     }
 
 

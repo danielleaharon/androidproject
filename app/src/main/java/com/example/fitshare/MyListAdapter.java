@@ -9,8 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.fitshare.model.ModelFirebase;
-import com.example.fitshare.model.User;
+import com.example.fitshare.model.ModelListDao;
 import com.example.fitshare.model.myLists;
 
 import java.util.ArrayList;
@@ -34,8 +33,29 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
     {
         this.activity=activity;
         this.parent= (HomeActivity) activity;
-        myLists=ModelFirebase.instance.getUser().getMyLists();
+   //     reloadData();
+       // myLists=ModelFirebase.instance.getUser().getMyLists();
+//        ModelDao.instance.getAllMyLists(new ModelDao.GetAllMyListsListener() {
+//            @Override
+//            public void onComplete(List<myLists> data) {
+//                myLists=data;
+//            }
+//        });
+//        reloadData();
+
         this.inflater=activity.getLayoutInflater();
+    }
+
+
+    void reloadData(){
+
+        ModelListDao.instance.getAllMyLists(parent.value.getId(),new ModelListDao.GetAllMyListsListener() {
+            @Override
+            public void onComplete(List<myLists> data) {
+                myLists = data;
+                notifyDataSetChanged();
+            }
+        });
     }
     void setonItemClickListenr(onItemClickListenr listener){
         this.listener= (onItemClickListenr) listener;
@@ -53,6 +73,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
         View view = LayoutInflater.from(activity)
                 .inflate(R.layout.my_list_item, parent, false);
 
@@ -71,11 +92,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         return myLists.size();
     }
 
-        public void updateList()
-{
-    this.myLists=ModelFirebase.instance.getUser().getMyLists();
-    notifyDataSetChanged();
-}
+
     static public class ViewHolder extends RecyclerView.ViewHolder {
 
         public View mView;
@@ -113,11 +130,11 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         public void bind( int position) {
 
             this.i= position;
-            name.setText(myLists.get(position).ListName);
-            if(parent.value.language.equals("Hebrew"))
-            product_count.setText("מספר מוצרים: " +myLists.get(position).listCount);
+            name.setText(myLists.get(position).getListName());
+            if(parent.value.getLanguage().equals("Hebrew"))
+            product_count.setText("מספר מוצרים: " +myLists.get(position).getListCount());
             else {
-                product_count.setText("Number of products: " + myLists.get(position).listCount);
+                product_count.setText("Number of products: " + myLists.get(position).getListCount());
             }
 
 

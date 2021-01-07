@@ -3,17 +3,14 @@ package com.example.fitshare;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -25,10 +22,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.fitshare.model.ImageModel;
 import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelListDao;
 import com.example.fitshare.model.myLists;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +46,7 @@ public class AddListFragment extends Fragment {
     //Dialog parameter
     String userName;
 
+  //  List<myLists> myLists = new ArrayList<>();
     List<String> user = new ArrayList<>();
 
     public AddListFragment() {
@@ -80,7 +77,13 @@ public class AddListFragment extends Fragment {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
         ModelFirebase.instance.setActivity(parent);
-    }
+//        ModelListDao.instance.getAllMyLists(new ModelListDao.GetAllMyListsListener() {
+//            @Override
+//            public void onComplete(List<com.example.fitshare.model.myLists> data) {
+//                myLists=data;
+//            }
+//        });
+   }
 
     @Override
     public void onStop() {
@@ -106,7 +109,7 @@ public class AddListFragment extends Fragment {
         TextView listFriend_txt = view.findViewById(R.id.listFriend_txt);
         listName_edit = view.findViewById(R.id.listName_edit);
 
-        if (parent.value.language.equals("Hebrew")) {
+        if (parent.value.getLanguage().equals("Hebrew")) {
             listName_txt.setText(R.string.listNameHebrew);
             listFriend_txt.setText(R.string.listFriendHebrew);
             add_friend_btn.setText("הוסף חבר חדש");
@@ -119,17 +122,17 @@ public class AddListFragment extends Fragment {
         parent.save_btn.setOnClickListener(v -> {
 
             String listName = listName_edit.getText().toString().trim();
-            if (parent.value.language.equals("Hebrew")) {
+            if (parent.value.getLanguage().equals("Hebrew")) {
                 if (TextUtils.isEmpty(listName)) {
                     listName_edit.setError("צריך שם לרשימה");
                     return;
 
 
                 }
-                for (myLists name : parent.value.getMyLists()) {
-                    if (name.ListName.equals(listName)) {
+                for (myLists name : parent.AllMyLists) {
+                    if (name.getListName().equals(listName)) {
                         if (parent.CorrectList != null)
-                            if (parent.CorrectList.ListName.equals(listName))
+                            if (parent.CorrectList.getListName().equals(listName))
                                 break;
                         listName_edit.setError("השם תפוס");
                         return;
@@ -144,10 +147,10 @@ public class AddListFragment extends Fragment {
 
 
                 }
-                for (myLists name : parent.value.getMyLists()) {
-                    if (name.ListName.equals(listName)) {
+                for (myLists name : parent.AllMyLists) {
+                    if (name.getListName().equals(listName)) {
                         if (parent.CorrectList != null)
-                            if (parent.CorrectList.ListName.equals(listName))
+                            if (parent.CorrectList.getListName().equals(listName))
                                 break;
                         listName_edit.setError("The name is busy");
                         return;
@@ -156,8 +159,10 @@ public class AddListFragment extends Fragment {
 
             }
                 if (parent.CorrectList != null) {
-                    if (!parent.CorrectList.ListName.equals(listName))
-                        parent.CorrectList.ListName = listName;
+                    if (!parent.CorrectList.getListName().equals(listName)) {
+                        parent.CorrectList.setListName(listName);
+                        parent.ListName=listName;
+                    }
                     ModelFirebase.instance.UpdateListData(parent.CorrectList, parent.ListPosition);
                     for (String email : user) {
                         parent.addUserToList(email);
@@ -165,7 +170,8 @@ public class AddListFragment extends Fragment {
 
 
                 } else {
-                    ModelFirebase.instance.newList(listName, parent.value.id, user);
+
+                    ModelFirebase.instance.newList(listName, parent.value.getId(), user);
                 }
             hideKeyboard(v);
                 parent.navCtrl.popBackStack();
@@ -208,12 +214,12 @@ public class AddListFragment extends Fragment {
             Button ok_btn = dialog1.findViewById(R.id.ok_btn);
             ok_btn.setOnClickListener( v12 -> {
                 userName = user_edit.getText().toString().trim();
-                if (parent.value.language.equals("Hebrew")) {
+                if (parent.value.getLanguage().equals("Hebrew")) {
                     if (TextUtils.isEmpty(userName)) {
                         user_edit.setError("צריך שם משתמש");
                         return;
                     }
-                    if (parent.value.email.equals(userName)) {
+                    if (parent.value.getEmail().equals(userName)) {
                         user_edit.setError("אתה לא יכול להוסיף את עצמך!");
                         return;
                     }
@@ -244,7 +250,7 @@ public class AddListFragment extends Fragment {
                         user_edit.setError("Need a username");
                         return;
                     }
-                    if (parent.value.email.equals(userName)) {
+                    if (parent.value.getEmail().equals(userName)) {
                         user_edit.setError("You can not add yourself!");
                         return;
                     }
@@ -285,7 +291,7 @@ public class AddListFragment extends Fragment {
         listView.setLayoutManager(layoutManger);
         EditText List_name = view.findViewById(R.id.listName_edit);
         if (parent.CorrectList != null) {
-            List_name.setText(parent.CorrectList.ListName);
+            List_name.setText(parent.CorrectList.getListName());
             user = ModelFirebase.instance.getUserList();
         } else {
             user = parent.userDailog;

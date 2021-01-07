@@ -35,13 +35,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -72,14 +66,12 @@ public class MainActivity extends AppCompatActivity {
         Password_edit = findViewById(R.id.Password_edit);
         Forgot_Password_btn = findViewById(R.id.Forgot_Password_btn);
 
+
         //If the user has already logged in to the app, doesn't ask them to reconnect
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // User is signed in
             db.getUserData(user.getEmail(), MainActivity.this);
-        } else {
-            // User is signed out
-
         }
 
 
@@ -111,33 +103,40 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                Sign_btn.setEnabled(false);
                 String email = Email_edit.getText().toString().trim();
                 String Password = Password_edit.getText().toString().trim();
                 if (TextUtils.isEmpty(email)) {
                     Email_edit.setError("email");
+                    Sign_btn.setEnabled(true);
                     return;
                 }
 
                 if (TextUtils.isEmpty(Password)) {
                     Password_edit.setError("password");
+                    Sign_btn.setEnabled(true);
                     return;
                 }
                 if (Password.length() <= 6) {
                     Password_edit.setError("Password < 7");
+                    Sign_btn.setEnabled(true);
                     return;
                 }
                 if(!email.contains("@")) {
                         Email_edit.setError("Invalid email");
+                    Sign_btn.setEnabled(true);
                     return;
                 }
                 else {
                     String[] tempList = email.split("@");
                     if(tempList.length<2) {
                         Email_edit.setError("Invalid email");
+                        Sign_btn.setEnabled(true);
                         return;
                     }
                     else if(!tempList[1].contains(".")) {
                         Email_edit.setError("Invalid email");
+                        Sign_btn.setEnabled(true);
                         return;
                     }
 

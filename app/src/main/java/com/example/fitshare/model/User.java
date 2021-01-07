@@ -1,71 +1,44 @@
 package com.example.fitshare.model;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
 import java.util.List;
+@Entity
 
 public class User {
+    @NonNull
+    @PrimaryKey
+    private String id;
+    private String email;
+   // public List<myLists> myLists=new ArrayList<>();
+  private String language;
 
-    public String email;
-    public List<myLists> myLists=new ArrayList<>();
-    public String id;
-    public String language;
-
-    public User(String email, String id,String language) {
+    public User(String email,String id,String language) {
         this.email = email;
         this.id = id;
-        this.myLists = new ArrayList<>();
+     //   this.myLists = new ArrayList<>();
         this.language=language;
 
     }
 
-    public User() {
-//        this.email = email;
-//        this.id = id;
-//        myLists = new ArrayList<>();
+    @Ignore
+    public User() { }
 
-    }
+    public String getId(){return this.id;}
+    public String getEmail(){return this.email;}
+    public String getLanguage(){return this.language;}
 
-    public void addtolist(myLists newList) {
-        myLists.add(newList);
+    public void setLanguage(String language){ this.language=language;}
+    public void setId(String id){ this.id=id;}
+    public void setEmail(String email){ this.email=email;}
 
-    }
 
-    public List<myLists> getMyLists() {
 
-        return this.myLists;
 
-    }
-    public void removeFromListByName(String listName)
-    {
-        for (myLists list:myLists) {
-            if(list.ListName.equals(listName))
-                myLists.remove(list);
-
-        }
-    }
-    public void updateListName(String oldName,String newName){
-
-        for (int i=0; i<myLists.size();i++)
-        {
-            if(myLists.get(i).listID.equals(oldName))
-                myLists.get(i).ListName="newName";
-
-        }
-
-    }
-
-    public int getPosition(myLists myLists1)
-    {
-        int i=0;
-        for (myLists my: myLists) {
-            if(my.listID.equals(myLists1.listID)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
-    }
 }

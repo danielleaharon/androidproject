@@ -6,13 +6,13 @@
 
 
     <item
-        android:id="@+id/units"
+        android:id="@+id/unitsE"
         android:title="Units" />
     <item
-        android:id="@+id/gram"
+        android:id="@+id/gramE"
         android:title="Gm" />
     <item
-        android:id="@+id/kilogram"
+        android:id="@+id/kilogramE"
         android:title="Kg" />
 
 </menu>

@@ -46,7 +46,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.774"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar2"
+        tools:text="linkedinuser@gmail.com" />
 
     <EditText
         android:id="@+id/Password_edit"
@@ -59,7 +60,8 @@
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="@+id/Email_edit"
         app:layout_constraintStart_toStartOf="@+id/Email_edit"
-        app:layout_constraintTop_toBottomOf="@+id/Email_edit" />
+        app:layout_constraintTop_toBottomOf="@+id/Email_edit"
+        tools:text="1234567" />
 
     <Button
         android:id="@+id/Sign_btn"

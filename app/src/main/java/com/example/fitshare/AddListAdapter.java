@@ -121,7 +121,7 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
                 this.i = position;
                 name.setText(UserList.get(position));
 
-            if (ModelFirebase.instance.getUser().email.equals(UserList.get(position)))
+            if (parent.value.getEmail().equals(UserList.get(position)))
                 delete_btn.setVisibility(View.INVISIBLE);
 
 

@@ -5,13 +5,13 @@
 
 
     <item
-        android:id="@+id/units"
+        android:id="@+id/unitsH"
         android:title=" יח׳" />
     <item
-        android:id="@+id/gram"
+        android:id="@+id/gramH"
         android:title=" גרם" />
     <item
-        android:id="@+id/kilogram"
+        android:id="@+id/kilogramH"
         android:title=" קילוגרם" />
 
 </menu>
