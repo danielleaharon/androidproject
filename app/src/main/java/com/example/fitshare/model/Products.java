@@ -38,11 +38,12 @@ public class Products implements Serializable {
     public void setDelete(boolean delete) {
         isDelete = delete;
     }
-
+    @NonNull
     public String getListID() {
         return this.listID;
     }
 
+    @NonNull
     public String getName() {
         return this.name;
     }

@@ -91,17 +91,14 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
 
 
         floating_addList_btn = findViewById(R.id.floating_addList_btn);
-        floating_addList_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        floating_addList_btn.setOnClickListener(view -> {
 
-                userDailog = new ArrayList<>();
-                userDailog.add(value.getEmail());
-                NavDirections directions = MylistFragmentDirections.actionMylistFragmentToAddListFragment();
-                navCtrl.navigate(directions);
+            userDailog = new ArrayList<>();
+            userDailog.add(value.getEmail());
+            NavDirections directions = MylistFragmentDirections.actionMylistFragmentToAddListFragment();
+            navCtrl.navigate(directions);
 
 
-            }
         });
 
         logout_btn = findViewById(R.id.logout_btn);
@@ -111,26 +108,21 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         addList_btn = findViewById(R.id.add_btn);
         save_btn = findViewById(R.id.save_btn);
 
-        addList_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        addList_btn.setOnClickListener((v) -> {
 
-                if (listID != null) {
-                    ModelList.instance.getUserList(listID, new ModelList.UserListsListener() {
-                        @Override
-                        public void onComplete(List<String> data) {
-                            userDailog = data;
-                            NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
-                            navCtrl.navigate(directions);
-                        }
-                    });
-                } else {
-                    userDailog = new ArrayList<>();
-                    userDailog.add(value.getEmail());
+            if (listID != null) {
+                ModelList.instance.getUserList(listID, data -> {
+                    userDailog = data;
                     NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
                     navCtrl.navigate(directions);
-                }
+                });
+            } else {
+                userDailog = new ArrayList<>();
+                userDailog.add(value.getEmail());
+                NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
+                navCtrl.navigate(directions);
             }
+
         });
         copy_list_btn = findViewById(R.id.copy_list_btn);
 
@@ -152,12 +144,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         this.ListPosition = position;
         CorrectList = AllMyLists.get(position);
 
-        ModelProduct.instance.RefreshProducts(listID, new ModelProduct.GetRefreshProductsListener() {
-            @Override
-            public void onComplete() {
-                OpenProductList();
-            }
-        });
+        ModelProduct.instance.RefreshProducts(listID, () -> OpenProductList());
     }
 
     public void setTitle(String titel) {
