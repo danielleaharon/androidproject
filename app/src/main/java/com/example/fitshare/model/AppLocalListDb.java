@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 
 import com.example.fitshare.MyApplication;
 
-@Database(entities = {myLists.class}, version = 2)
+@Database(entities = {myLists.class}, version = 3)
 abstract class AppLocalListDbRepository extends RoomDatabase {
     public abstract myListDao myListDao();
 

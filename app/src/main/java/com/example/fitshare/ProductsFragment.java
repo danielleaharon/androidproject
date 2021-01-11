@@ -1,6 +1,6 @@
 package com.example.fitshare;
 
-import android.annotation.SuppressLint;
+
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,32 +32,31 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import com.example.fitshare.model.ModelFirebase;
-import com.example.fitshare.model.ModelProductDao;
+import com.example.fitshare.model.ModelList;
+import com.example.fitshare.model.ModelProduct;
 import com.example.fitshare.model.Products;
 import com.example.fitshare.model.myLists;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 
 public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+
     HomeActivity parent;
     List<Products> Products_list = new ArrayList<>();
     EditText newListName_edit;
     ProductsAdapter ProductsAdapter;
     RecyclerView listView;
     String amount_popup = "יח׳";
+    ProductsViewModel viewModel;
+    androidx.lifecycle.LiveData<List<Products>> LiveData;
+
 
     //dialog parameter
     EditText amount_edit;
     RecyclerView myrcylist;
-    Button ok_btn;
     Button cancel_btn;
     Button popup_btn;
     Button amount_add_btn;
@@ -68,9 +69,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
-
-
-
+        viewModel = new ViewModelProvider(this).get(ProductsViewModel.class);
 
     }
 
@@ -83,8 +82,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public static ProductsFragment newInstance(String param1, String param2) {
         ProductsFragment fragment = new ProductsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -92,35 +89,10 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
-
 
     }
 
-//    @Override
-//    public void onPause() {
-//        super.onPause();
-//        parent.RefreshList();
-//        parent.setTitle(parent.ListName);
-//        Log.d("TAG", "onPause:" + parent.ListName);
-//    }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        parent.RefreshList();
-//        parent.setTitle(parent.ListName);
-//        Log.d("TAG", "onResume:" + parent.ListName);
-//
-//
-//    }
-
-
-    @SuppressLint("RestrictedApi")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -140,10 +112,13 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         parent.floating_addList_btn.hide();
         parent.addList_btn.setBackgroundResource(R.drawable.editicon);
 
-        ModelProductDao.instance.getAllProducts(parent.listID, new ModelProductDao.GetAllProductsListener() {
+        LiveData = viewModel.getData(parent.listID);
+        LiveData.observe(getViewLifecycleOwner(), new Observer<List<Products>>() {
             @Override
-            public void onComplete(List<Products> data) {
-                Products_list=(data);
+            public void onChanged(List<com.example.fitshare.model.Products> products) {
+                Products_list = products;
+                ProductsAdapter.setList(Products_list);
+
             }
         });
         parent.copy_list_btn.setOnClickListener(new View.OnClickListener() {
@@ -198,7 +173,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                         case KeyEvent.KEYCODE_ENTER:
                             addProductwithEnter();
 
-
                             return true;
                         default:
                             break;
@@ -213,18 +187,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void SortProducts() {
-        Products_list.sort(new Comparator<Products>() {
-            @Override
-            public int compare(com.example.fitshare.model.Products o1, com.example.fitshare.model.Products o2) {
-                if (o2.isSelected()) return -1;
-                return 1;
-            }
-        });
-
-    }
 
     //Placing the possibility of skidding in the circular list
 
@@ -262,20 +224,20 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             yes_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Products products=Products_list.get(viewHolder.getAdapterPosition());
-                    ModelFirebase.instance.removeProducts(products, parent.listID,viewHolder.getAdapterPosition());
-                  //  Products_list.remove(viewHolder.getAdapterPosition());
-                    ProductsAdapter.reloadData();
-                    listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
-                    dialog1.cancel();
+                    Products products = Products_list.get(viewHolder.getAdapterPosition());
+                    ModelProduct.instance.deleteProducts(products, viewHolder.getAdapterPosition(), new ModelProduct.deleteProductsListener() {
+                        @Override
+                        public void onComplete() {
+                            dialog1.cancel();
+                        }
+                    });
+
                 }
             });
             cancel_btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    ProductsAdapter.reloadData();
-                    listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
+                    ProductsAdapter.notifyDataSetChanged();
                     dialog1.cancel();
                 }
             });
@@ -325,11 +287,14 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             public void onClick(int position) {
 
                 myLists myLists = myLists1.get(position);
-                int i = parent.getPosition(myLists);
-                ModelFirebase.instance.getCopyListData(myLists.getListID(), parent, i);
+                int i = parent.getListPosition(myLists);
+                ModelProduct.instance.CopyProducts(myLists.getListID(), i, new ModelList.updateMyListsListener() {
+                    @Override
+                    public void onComplete() {
+                        dialog1.cancel();
+                    }
+                });
 
-
-                dialog1.cancel();
             }
         });
 
@@ -339,7 +304,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             @Override
             public void onClick(View v) {
 
-
+                ProductsAdapter.notifyDataSetChanged();
                 dialog1.cancel();
             }
         });
@@ -356,8 +321,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
 
         Dialog dialog1 = new Dialog(parent);
-
-
         dialog1.setContentView(R.layout.amount_dialog);
         dialog1.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         dialog1.getWindow().getAttributes().windowAnimations = R.style.DialogTheme;
@@ -368,7 +331,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         popup_btn = dialog1.findViewById(R.id.popup_btn);
         amount_add_btn = dialog1.findViewById(R.id.amount_add_btn);
         amount_add_btn.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
+
             @Override
             public void onClick(View v) {
                 String value = amount_edit.getText().toString();
@@ -380,7 +343,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         });
         amount_remove_btn = dialog1.findViewById(R.id.amount_remove_btn);
         amount_remove_btn.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View v) {
                 String value = amount_edit.getText().toString();
@@ -396,7 +358,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                     } else
                         amount_edit.setError("הגעת למינימום");
                 }
-
 
             }
         });
@@ -455,9 +416,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
                 String new_amount = amount + " " + amount_popup;
                 products.setAmount(new_amount);
-                ModelFirebase.instance.UpdateProducts(products, parent.listID);
-
-
+                ModelProduct.instance.updateProducts(products, null);
                 dialog1.cancel();
             }
         });
@@ -469,7 +428,6 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 dialog1.cancel();
             }
         });
-
 
         dialog1.setCancelable(true);
         window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
@@ -544,7 +502,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+
     public void addProductwithEnter() {
         String listName = newListName_edit.getText().toString().trim();
         Products Products;
@@ -571,20 +529,15 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 }
             }
         }
-        Products = new Products(listName, false, "noImage", "1 Units",parent.listID);
+        Products = new Products(listName, false, "noImage", "1 Units", parent.listID);
+        ModelProduct.instance.addProducts(Products, null);
 
-       // Products_list.add(Products);
-
-
-        ModelFirebase.instance.newProducts(Products, parent.listID, parent.ListPosition);
-
+        Products_list.add(Products);
+        ProductsAdapter.setList(Products_list);
         newListName_edit.getText().clear();
         newListName_edit.requestFocus();
-
-
-        ProductsAdapter.reloadData();
-        listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
-
+        newListName_edit.getText().clear();
+        newListName_edit.requestFocus();
 
     }
 
@@ -593,23 +546,17 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
+
     @Override
     public void onRefresh() {
         swipeRefreshLayout.setRefreshing(true);
-        refreshList();
+
+        viewModel.Refresh(parent.listID, new ProductsViewModel.RefreshProductsListener() {
+            @Override
+            public void onComplete() {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void refreshList() {
-
-//        ModelFirebase.instance.refreshProductList(parent.listID);
-//        ProductsAdapter.notifyDataSetChanged();
-//        ProductsAdapter.updateList();
-        ProductsAdapter.reloadData();
-        listView.setAdapter((RecyclerView.Adapter) ProductsAdapter);
-        swipeRefreshLayout.setRefreshing(false);
-
-
-    }
 }

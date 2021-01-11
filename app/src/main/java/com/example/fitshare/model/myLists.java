@@ -30,12 +30,15 @@ public class myLists {
         this.ListName = ListName;
         this.listID = listID;
         this.listCount = listCount;
-        this.isDelete=false;
+        this.isDelete = false;
 
     }
 
 
-    public Boolean getIsDelete(){return this.isDelete;}
+    public Boolean getIsDelete() {
+        return this.isDelete;
+    }
+
     public String getListName() {
         return this.ListName;
     }
@@ -52,7 +55,10 @@ public class myLists {
         return this.listCount;
     }
 
-    public void setIsDelete(Boolean isDelete){this.isDelete=isDelete;}
+    public void setIsDelete(Boolean isDelete) {
+        this.isDelete = isDelete;
+    }
+
     public void setListName(String listName) {
         this.ListName = listName;
     }

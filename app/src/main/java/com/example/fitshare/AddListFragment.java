@@ -22,43 +22,35 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.fitshare.model.ModelFirebase;
-import com.example.fitshare.model.ModelListDao;
+
+import com.example.fitshare.model.ModelList;
+import com.example.fitshare.model.ModelUser;
 import com.example.fitshare.model.myLists;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AddListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class AddListFragment extends Fragment {
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+
     RecyclerView listView;
     HomeActivity parent;
     AddListAdapter addListAdapter;
     EditText listName_edit;
+    List<String> ListOfUser = new ArrayList<>();
 
     //Dialog parameter
     String userName;
 
-  //  List<myLists> myLists = new ArrayList<>();
-    List<String> user = new ArrayList<>();
 
-    public AddListFragment() {
-        // Required empty public constructor
-    }
+    public AddListFragment() {}
+
 
 
     public static AddListFragment newInstance(String param1, String param2) {
         AddListFragment fragment = new AddListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -66,24 +58,15 @@ public class AddListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
+
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
-        ModelFirebase.instance.setActivity(parent);
-//        ModelListDao.instance.getAllMyLists(new ModelListDao.GetAllMyListsListener() {
-//            @Override
-//            public void onComplete(List<com.example.fitshare.model.myLists> data) {
-//                myLists=data;
-//            }
-//        });
-   }
+
+    }
 
     @Override
     public void onStop() {
@@ -119,6 +102,7 @@ public class AddListFragment extends Fragment {
             listFriend_txt.setText(R.string.listFriendEnglish);
             add_friend_btn.setText(R.string.addFriendEnglish);
         }
+
         parent.save_btn.setOnClickListener(v -> {
 
             String listName = listName_edit.getText().toString().trim();
@@ -126,8 +110,6 @@ public class AddListFragment extends Fragment {
                 if (TextUtils.isEmpty(listName)) {
                     listName_edit.setError("צריך שם לרשימה");
                     return;
-
-
                 }
                 for (myLists name : parent.AllMyLists) {
                     if (name.getListName().equals(listName)) {
@@ -138,13 +120,10 @@ public class AddListFragment extends Fragment {
                         return;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 if (TextUtils.isEmpty(listName)) {
                     listName_edit.setError("Need a name for the list");
                     return;
-
 
                 }
                 for (myLists name : parent.AllMyLists) {
@@ -158,26 +137,26 @@ public class AddListFragment extends Fragment {
                 }
 
             }
-                if (parent.CorrectList != null) {
-                    if (!parent.CorrectList.getListName().equals(listName)) {
-                        parent.CorrectList.setListName(listName);
-                        parent.ListName=listName;
-                    }
-                    ModelFirebase.instance.UpdateListData(parent.CorrectList, parent.ListPosition);
-                    for (String email : user) {
-                        parent.addUserToList(email);
-                    }
-
-
-                } else {
-
-                    ModelFirebase.instance.newList(listName, parent.value.getId(), user);
+            if (parent.CorrectList != null) {
+                if (!parent.CorrectList.getListName().equals(listName)) {
+                    parent.CorrectList.setListName(listName);
+                    parent.ListName = listName;
                 }
+                ModelList.instance.updateMyList(parent.CorrectList, null);
+                for (String email : ListOfUser) {
+                    ModelList.instance.addUserToList(email,parent.CorrectList);
+
+                }
+
+            } else {
+
+                ModelList.instance.addMyList(listName, ListOfUser, null);
+            }
             hideKeyboard(v);
-                parent.navCtrl.popBackStack();
+            parent.navCtrl.popBackStack();
 
 
-            });
+        });
 
         listName_edit.setOnKeyListener((v, keyCode, event) -> {
 
@@ -196,7 +175,7 @@ public class AddListFragment extends Fragment {
         });
 
 
-        add_friend_btn.setOnClickListener( v -> {
+        add_friend_btn.setOnClickListener(v -> {
 
             EditText user_edit;
 
@@ -212,7 +191,7 @@ public class AddListFragment extends Fragment {
 
             cancel_btn.setOnClickListener(v1 -> dialog1.cancel());
             Button ok_btn = dialog1.findViewById(R.id.ok_btn);
-            ok_btn.setOnClickListener( v12 -> {
+            ok_btn.setOnClickListener(v12 -> {
                 userName = user_edit.getText().toString().trim();
                 if (parent.value.getLanguage().equals("Hebrew")) {
                     if (TextUtils.isEmpty(userName)) {
@@ -224,28 +203,31 @@ public class AddListFragment extends Fragment {
                         return;
                     }
 
-                    if (ModelFirebase.instance.CheckUserExists(userName)) {
-                        if (user.contains(userName)) {
-                            user_edit.setError("משתמש כבר קיים ברשימה");
-                            return;
-                        }
-                        parent.setUserDailog(userName);
+                    ModelUser.instance.CheckUserExists(userName, new ModelUser.CheckUserExistsListener() {
+                        @Override
+                        public void onComplete(Boolean bool) {
+                            if (bool == true) {
+                                if (ListOfUser.contains(userName)) {
+                                    user_edit.setError("משתמש כבר קיים ברשימה");
+                                    return;
+                                }
+                                parent.addToUserDailog(userName);
 
+                                if (parent.CorrectList != null) {
+                                    addListAdapter.notifyDataSetChanged();
+                                    addListAdapter.updateList(ListOfUser);
+                                   // listView.setAdapter(addListAdapter);
+                                }
+                                dialog1.cancel();
+                            } else {
+                                user_edit.setError("משתמש לא קיים");
+                                return;
+                            }
 
-                        // }
-                        if (parent.CorrectList != null) {
-                            user.add(userName);
-                            addListAdapter.notifyDataSetChanged();
-                            addListAdapter.updateList(user);
-                            listView.setAdapter( addListAdapter);
                         }
-                        dialog1.cancel();
-                    } else {
-                        user_edit.setError("משתמש לא קיים");
-                        return;
-                    }
-                }
-                else {
+                    });
+
+                } else {
                     if (TextUtils.isEmpty(userName)) {
                         user_edit.setError("Need a username");
                         return;
@@ -255,30 +237,33 @@ public class AddListFragment extends Fragment {
                         return;
                     }
 
-                    if (ModelFirebase.instance.CheckUserExists(userName)) {
-                        if (user.contains(userName)) {
-                            user_edit.setError("A user already exists in the list");
-                            return;
-                        }
-                        parent.setUserDailog(userName);
+                    ModelUser.instance.CheckUserExists(userName, new ModelUser.CheckUserExistsListener() {
+                        @Override
+                        public void onComplete(Boolean bool) {
+                            if (bool == true) {
+                                if (ListOfUser.contains(userName)) {
+                                    user_edit.setError("A user already exists in the list");
+                                    return;
+                                }
+                                parent.addToUserDailog(userName);
 
+                                if (parent.CorrectList != null) {
 
-                        // }
-                        if (parent.CorrectList != null) {
-                            user.add(userName);
-                            addListAdapter.notifyDataSetChanged();
-                            addListAdapter.updateList(user);
-                            listView.setAdapter( addListAdapter);
+                                    addListAdapter.notifyDataSetChanged();
+                                    addListAdapter.updateList(ListOfUser);
+                                   // listView.setAdapter(addListAdapter);
+                                }
+                                dialog1.cancel();
+                            } else {
+                                user_edit.setError("User does not exist");
+
+                            }
                         }
-                        dialog1.cancel();
-                    } else {
-                        user_edit.setError("User does not exist");
-                       // return;
-                    }
+                    });
+
                 }
 
             });
-
 
             dialog1.setCancelable(true);
             window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
@@ -292,21 +277,13 @@ public class AddListFragment extends Fragment {
         EditText List_name = view.findViewById(R.id.listName_edit);
         if (parent.CorrectList != null) {
             List_name.setText(parent.CorrectList.getListName());
-            user = ModelFirebase.instance.getUserList();
-        } else {
-            user = parent.userDailog;
-
         }
-        addListAdapter = new AddListAdapter(parent, user);
+        ListOfUser = parent.userDailog;
+
+        addListAdapter = new AddListAdapter(parent, ListOfUser);
 
         listView.setAdapter(addListAdapter);
-//        addListAdapter.setonItemClickListenr(new AddListAdapter.onItemClickListenr() {
-//            @Override
-//            public void onClick(int position) {
-//
-//
-//            }
-//        });
+
 
         return view;
     }

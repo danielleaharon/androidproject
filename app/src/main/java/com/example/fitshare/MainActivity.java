@@ -4,58 +4,46 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.NavigationUI;
-
+import androidx.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelList;
+import com.example.fitshare.model.ModelProduct;
+import com.example.fitshare.model.ModelUser;
 import com.example.fitshare.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.ActionCodeSettings;
-
-
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 
 
 
 public class MainActivity extends AppCompatActivity {
-    NavController navCtrl;
+
     private FirebaseAuth mAuth;
     Button Sign_btn;
-    FirebaseUser currentUser;
-    ModelFirebase db;
     EditText Email_edit;
     EditText Password_edit;
     String userID;
-    DatabaseReference myRef;
     Button Forgot_Password_btn;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        db = ModelFirebase.instance;
-        mAuth = ModelFirebase.instance.getmAuth();
+
+        mAuth = FirebaseAuth.getInstance();
 
         Toolbar toolbar = findViewById(R.id.toolbar2);
         setSupportActionBar(toolbar);
@@ -71,7 +59,16 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // User is signed in
-            db.getUserData(user.getEmail(), MainActivity.this);
+            openUploadPage();
+            userID = ModelUser.instance.cleanUserName(user.getEmail());
+            ModelUser.instance.getUser(userID, new ModelUser.GetUserListener() {
+                @Override
+                public void onComplete() {
+                    openLists();
+                }
+            });
+
+
         }
 
 
@@ -122,19 +119,17 @@ public class MainActivity extends AppCompatActivity {
                     Sign_btn.setEnabled(true);
                     return;
                 }
-                if(!email.contains("@")) {
-                        Email_edit.setError("Invalid email");
+                if (!email.contains("@")) {
+                    Email_edit.setError("Invalid email");
                     Sign_btn.setEnabled(true);
                     return;
-                }
-                else {
+                } else {
                     String[] tempList = email.split("@");
-                    if(tempList.length<2) {
+                    if (tempList.length < 2) {
                         Email_edit.setError("Invalid email");
                         Sign_btn.setEnabled(true);
                         return;
-                    }
-                    else if(!tempList[1].contains(".")) {
+                    } else if (!tempList[1].contains(".")) {
                         Email_edit.setError("Invalid email");
                         Sign_btn.setEnabled(true);
                         return;
@@ -143,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-                email=email.toLowerCase();
+                email = email.toLowerCase();
                 SignIn(email, Password);
 
 
@@ -167,13 +162,18 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     Log.d("TAG", "new user: " + email + "  " + pass);
-                    Toast.makeText(MainActivity.this, email+", welcome ", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, email + ", welcome ", Toast.LENGTH_LONG).show();
 
+                    String email1 = email.toLowerCase();
+                    String userID = ModelUser.instance.cleanUserName(email);
+                    User user = new User(email, userID, "Hebrew");
+                    ModelUser.instance.newUser(user, new ModelUser.AddUserListener() {
+                        @Override
+                        public void onComplete() {
+                            SignIn(email1, pass);
+                        }
+                    });
 
-                    String email1=email.toLowerCase();
-                    db.newUser(email1);
-
-                    SignIn(email1, pass);
 
                 } else {
                     task.getException().printStackTrace();
@@ -195,16 +195,19 @@ public class MainActivity extends AppCompatActivity {
 
                     Log.d("TAG", "Login successful ");
 
-                    //openUploadPage();
-                    userID = db.getUserId(email);
-                    db.getUserData(email, MainActivity.this);
+                    openUploadPage();
+                    userID = ModelUser.instance.cleanUserName(email);
+                    ModelUser.instance.getUser(userID, new ModelUser.GetUserListener() {
+                        @Override
+                        public void onComplete() {
+                            openLists();
+                        }
+                    });
 
 
                 } else {
                     task.getException().printStackTrace();
                     Register(email, pass);
-
-                    //  Toast.makeText(MainActivity.this,"לא קיים משתמש ",Toast.LENGTH_LONG).show();
                     Log.d("TAG", "Login failed ");
 
                 }
@@ -213,7 +216,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void openLists() {
+
+        Intent intent = new Intent(this, HomeActivity.class);
+        this.startActivity(intent);
+        this.finish();
+
+    }
+
     public void openUploadPage() {
+        hideKeyboard();
         UploadFragment UploadFragment = new UploadFragment();
         UploadFragment.parent = this;
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();

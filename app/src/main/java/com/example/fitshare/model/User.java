@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 
 public class User {
@@ -16,29 +17,42 @@ public class User {
     @PrimaryKey
     private String id;
     private String email;
-   // public List<myLists> myLists=new ArrayList<>();
-  private String language;
+    private String language;
 
-    public User(String email,String id,String language) {
+    public User(String email, String id, String language) {
         this.email = email;
         this.id = id;
-     //   this.myLists = new ArrayList<>();
-        this.language=language;
+        this.language = language;
 
     }
 
     @Ignore
-    public User() { }
+    public User() {
+    }
 
-    public String getId(){return this.id;}
-    public String getEmail(){return this.email;}
-    public String getLanguage(){return this.language;}
+    public String getId() {
+        return this.id;
+    }
 
-    public void setLanguage(String language){ this.language=language;}
-    public void setId(String id){ this.id=id;}
-    public void setEmail(String email){ this.email=email;}
+    public String getEmail() {
+        return this.email;
+    }
 
+    public String getLanguage() {
+        return this.language;
+    }
 
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
 
 }

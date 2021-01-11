@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase;
 import com.example.fitshare.MyApplication;
 
 
-    @Database(entities = {Products.class}, version = 2)
+    @Database(entities = {Products.class}, version = 3)
     abstract class AppLocalProductsDbRepository extends RoomDatabase {
 
         public abstract ProductsDao ProductsDao();

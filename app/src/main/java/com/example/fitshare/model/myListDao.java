@@ -14,17 +14,19 @@ import java.util.List;
 @Dao
 public interface myListDao {
 
-    @Query("select * from myLists Where user==:userID ")
+    boolean False=false;
+    @Query("select * from myLists Where user==:userID and isDelete==0 ")
    LiveData< List<myLists>> getAllLists(String userID);
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.REPLACE)
      void updateMyLists(myLists... myLists);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(myLists... myLists);
 
 
-
+    @Query("DELETE FROM myLists")
+    void delete();
     @Delete
     void delete(myLists myLists);
 

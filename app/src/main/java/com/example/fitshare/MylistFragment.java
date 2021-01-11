@@ -1,14 +1,11 @@
 package com.example.fitshare;
 
-import android.annotation.SuppressLint;
+
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -17,7 +14,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,9 +22,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
-
-import com.example.fitshare.model.ModelListDao;
-import com.example.fitshare.model.ModelFirebase;
+import com.example.fitshare.model.ModelList;
+import com.example.fitshare.model.ModelUser;
 import com.example.fitshare.model.User;
 import com.example.fitshare.model.myLists;
 
@@ -37,11 +32,6 @@ import java.util.List;
 
 
 public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
-
-
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
 
     User user;
     List<myLists> myListsData = new ArrayList<>();
@@ -55,14 +45,11 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
 
     public MylistFragment() {
-
     }
 
     public static MylistFragment newInstance(String param1, String param2) {
         MylistFragment fragment = new MylistFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,19 +58,7 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (HomeActivity) getActivity();
-
-        ModelFirebase.instance.setActivity(parent);
         viewModel = new ViewModelProvider(this).get(myListsViewModel.class);
-//        LiveData=viewModel.getData();
-//        LiveData.observe(this, new Observer<List<com.example.fitshare.model.myLists>>() {
-//            @Override
-//            public void onChanged(List<com.example.fitshare.model.myLists> myLists) {
-//                myListsData=myLists;
-//                MyListAdapter.notifyDataSetChanged();
-//
-//            }
-//        });
-
 
     }
 
@@ -92,20 +67,19 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
-
     }
 
-    @SuppressLint("RestrictedApi")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_mylist, container, false);
-        this.user = ModelFirebase.instance.getUser();
+        this.user = ModelUser.instance.getUser();
+
         if (user.getLanguage().equals("Hebrew"))
             parent.setTitle("רשימות");
         else parent.setTitle("Lists");
+
         parent.CorrectList = null;
         parent.listID = null;
         parent.ListName = null;
@@ -114,29 +88,37 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
         parent.addList_btn.setVisibility(View.INVISIBLE);
         parent.copy_list_btn.setVisibility(View.INVISIBLE);
         parent.language_btn.setVisibility(View.VISIBLE);
-
         parent.floating_addList_btn.show();
 
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
         swipeRefreshLayout.setOnRefreshListener(this);
-//
-//        ModelListDao.instance.getAllMyLists(user.getId()) {
-//            @Override
-//            public void onComplete(List<myLists> data) {
-//
-//                myListsData =data;
-//                Log.d("TAG", "onCreateView, onComplete:" );
-//
-//            }
-//        });
+
         listView = view.findViewById(R.id.my_list_recycler);
         listView.setHasFixedSize(true);
         LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
         listView.setLayoutManager(layoutManger);
         new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
 
+        viewModel.getData(new myListsViewModel.GetAllMyListsListener() {
+            @Override
+            public void onComplete(androidx.lifecycle.LiveData<List<myLists>> data) {
+                LiveData=data;
+
+                LiveData.observe(getViewLifecycleOwner(), new Observer<List<com.example.fitshare.model.myLists>>() {
+                    @Override
+                    public void onChanged(List<com.example.fitshare.model.myLists> myLists) {
+                        myListsData = myLists;
+                        parent.AllMyLists=myLists;
+                        MyListAdapter.setList(myListsData);
+
+                    }
+                });
+            }
+        });
+
+
+
         MyListAdapter = new MyListAdapter(parent);
-        MyListAdapter.reloadData();
         listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
         MyListAdapter.setonItemClickListenr(new MyListAdapter.onItemClickListenr() {
             @Override
@@ -151,15 +133,8 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
         });
 
 
-        LiveData = viewModel.getData(user.getId());
-        LiveData.observe(getViewLifecycleOwner(), new Observer<List<com.example.fitshare.model.myLists>>() {
-            @Override
-            public void onChanged(List<com.example.fitshare.model.myLists> myLists) {
-                myListsData = myLists;
-                MyListAdapter.notifyDataSetChanged();
 
-            }
-        });
+
 
         return view;
     }
@@ -171,7 +146,6 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
             return false;
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 
@@ -200,19 +174,15 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 @Override
                 public void onClick(View v) {
 
-//                    ModelDao.instance.deleteMyList(myLists.get(viewHolder.getAdapterPosition()), new ModelDao.deleteMyListsListener() {
-//                        @Override
-//                        public void onComplete() {MyListAdapter.reloadData();
-//                            dialog1.cancel();
-//                        }
-//                    });
-                    ModelFirebase.instance.removeList(myListsData.get(viewHolder.getAdapterPosition()));
-                    parent.RefreshList();
-                    //  user.myLists.remove(viewHolder.getAdapterPosition());
-                    // MyListAdapter.notifyDataSetChanged();
-                    MyListAdapter.reloadData();
-                    listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
-                    dialog1.cancel();
+
+                  ModelList.instance.deleteMyList(myListsData.get(viewHolder.getAdapterPosition()), new ModelList.deleteMyListsListener() {
+                      @Override
+                      public void onComplete() {
+
+                          dialog1.cancel();
+                      }
+                  });
+
                 }
             });
             cancel_btn.setOnClickListener(new View.OnClickListener() {
@@ -220,7 +190,7 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 public void onClick(View v) {
 
                     MyListAdapter.notifyDataSetChanged();
-                    MyListAdapter.reloadData();
+
                     listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
                     dialog1.cancel();
                 }
@@ -240,17 +210,12 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onRefresh() {
 
         swipeRefreshLayout.setRefreshing(true);
-        refreshList();
-    }
+        viewModel.Refresh(new myListsViewModel.RefreshMyListsListener() {
+            @Override
+            public void onComplete() {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });    }
 
-    public void refreshList() {
 
-        viewModel.Refresh();
-        ModelFirebase.instance.refreshUserList();
-        MyListAdapter.reloadData();
-        // MyListAdapter.updateList();
-        listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
-        swipeRefreshLayout.setRefreshing(false);
-
-    }
 }
