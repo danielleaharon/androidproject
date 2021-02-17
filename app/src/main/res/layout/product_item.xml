@@ -13,14 +13,14 @@
     <ImageView
         android:id="@+id/image"
         android:layout_width="6dp"
-        android:layout_height="match_parent"
+        android:layout_height="43dp"
         android:layout_marginBottom="5dp"
         android:layout_weight="1"
-        app:srcCompat="@drawable/addimageicon" />
+        app:srcCompat="@drawable/cam2" />
 
     <LinearLayout
         android:layout_width="142dp"
-        android:layout_height="60dp"
+        android:layout_height="match_parent"
         android:layout_weight="2"
         android:gravity="bottom|center"
         android:orientation="vertical">
@@ -28,32 +28,35 @@
         <TextView
             android:id="@+id/name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="8dp"
             android:layout_weight="4"
             android:background="#00594747"
             android:gravity="bottom|center"
-            android:text="TextView"
             android:textColor="#0C0C0C"
-            android:textSize="16sp" />
+            android:textSize="17sp"
+            tools:text="TextView" />
 
         <TextView
             android:id="@+id/Amount_product"
             android:layout_width="match_parent"
-            android:layout_height="39dp"
+            android:layout_height="wrap_content"
             android:layout_weight="4"
             android:gravity="center|top"
-            android:text="כמות "
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            tools:text="כמות " />
 
     </LinearLayout>
 
     <CheckBox
         android:id="@+id/select"
+        style="@android:style/Widget.CompoundButton.CheckBox"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:button="@drawable/box"
         android:gravity="center"
-        android:textSize="30sp" />
+        android:paddingStart="20dp"
+     />
 
 
 </LinearLayout>

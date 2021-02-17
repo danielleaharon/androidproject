@@ -22,9 +22,9 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
 
 
     public AddListAdapter(HomeActivity activity, List<String> UserList) {
-        this.parent = activity;
+        parent = activity;
         this.activity = activity;
-        this.UserList = UserList;
+        AddListAdapter.UserList = UserList;
         this.inflater = activity.getLayoutInflater();
     }
 
@@ -51,7 +51,7 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
 
 
     public void updateList(List<String> UserList) {
-        this.UserList = (UserList);
+        AddListAdapter.UserList = (UserList);
         notifyDataSetChanged();
     }
 
@@ -68,16 +68,13 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
             name = mView.findViewById(R.id.name);
             delete_btn = mView.findViewById(R.id.delete_btn);
 
-            delete_btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (parent.listID != null) {
-                        ModelList.instance.DeleteUserToList(UserList.get(getAdapterPosition()).trim(), parent.CorrectList);
-                    }
-
-                    UserList.remove(getAdapterPosition());
-                    notifyDataSetChanged();
+            delete_btn.setOnClickListener(v -> {
+                if (parent.listID != null) {
+                    ModelList.instance.DeleteUserToList(UserList.get(getAdapterPosition()).trim(), parent.CorrectList);
                 }
+
+                UserList.remove(getAdapterPosition());
+                notifyDataSetChanged();
             });
 
         }
@@ -88,7 +85,7 @@ public class AddListAdapter extends RecyclerView.Adapter<AddListAdapter.ViewHold
             this.i = position;
             name.setText(UserList.get(position));
 
-            if (parent.value.getEmail().equals(UserList.get(position)))
+            if (parent.user.getEmail().equals(UserList.get(position)))
                 delete_btn.setVisibility(View.INVISIBLE);
 
 

@@ -9,10 +9,10 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="395dp"
+        android:layout_height="96dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="10dp"
         android:background="@drawable/custom_rounded_corners"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,25 +23,14 @@
             android:id="@+id/linearLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="5dp"
             android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/listName_txt"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/custom_rounded_corners2"
-                android:gravity="center|top"
-                android:text="@string/listNameHebrew"
-                android:textColor="#000000"
-                android:textSize="18sp" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0">
 
             <EditText
                 android:id="@+id/listName_edit"
@@ -61,7 +50,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
         android:background="@drawable/custom_rounded_corners"
@@ -81,25 +70,11 @@
             app:layout_constraintStart_toStartOf="@+id/add_friend_btn"
             app:layout_constraintTop_toTopOf="@+id/add_friend_btn" />
 
-        <TextView
-            android:id="@+id/listFriend_txt"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/custom_rounded_corners2"
-            android:gravity="center"
-            android:text="@string/listFriendHebrew"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <Button
             android:id="@+id/add_friend_btn"
             android:layout_width="0dp"
             android:layout_height="35dp"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="60dp"
             android:background="?attr/actionBarItemBackground"
             android:gravity="center"
             android:text="הוסף חבר חדש"
@@ -108,7 +83,7 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/listFriend_txt" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/friend_ryc"
@@ -126,6 +101,34 @@
         </androidx.recyclerview.widget.RecyclerView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/listFriend_txt"
+        android:layout_width="248dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/custom_rounded_corners3"
+        android:gravity="center"
+        android:text="@string/listFriendHebrew"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+    <TextView
+        android:id="@+id/listName_txt"
+        android:layout_width="248dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/custom_rounded_corners3"
+        android:gravity="center|top"
+        android:text="@string/listNameHebrew"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!--    <Button-->
     <!--        android:id="@+id/addList"-->

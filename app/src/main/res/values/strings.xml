@@ -7,4 +7,14 @@
     <string name="listFriendEnglish"><b>List Members</b></string>
     <string name="addFriendEnglish">Add new friend</string>
     <string name="save_btn"><b>שמור</b></string>
+    <string name="username">UserName</string>
+    <string name="yellow">yellow</string>
+    <string name="green">green</string>
+    <string name="blue">blue</string>
+    <string name="orange">orange</string>
+    <string name="yellowheb">צהוב</string>
+    <string name="greenheb">ירוק</string>
+    <string name="blueheb">כחול</string>
+    <string name="orangheb">כתום</string>
+
 </resources>

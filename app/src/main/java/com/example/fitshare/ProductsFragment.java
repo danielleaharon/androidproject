@@ -109,9 +109,11 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         parent.addList_btn.setVisibility(View.VISIBLE);
         parent.copy_list_btn.setVisibility(View.VISIBLE);
         parent.language_btn.setVisibility(View.INVISIBLE);
+        parent.colorbtn.setVisibility(View.INVISIBLE);
         parent.floating_addList_btn.hide();
         parent.addList_btn.setBackgroundResource(R.drawable.editicon);
 
+        view.setBackgroundColor(parent.color);
         LiveData = viewModel.getData(parent.listID);
         LiveData.observe(getViewLifecycleOwner(), new Observer<List<Products>>() {
             @Override
@@ -150,7 +152,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         newListName_edit = view.findViewById(R.id.newListName_edit);
 
-        if (parent.value.getLanguage().equals("English"))
+        if (parent.user.getLanguage().equals("English"))
             newListName_edit.setHint("Add a new item..");
 
 
@@ -216,7 +218,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             delete_txt = dialog1.findViewById(R.id.delete_txt);
 
 
-            if (parent.value.getLanguage().equals("English")) {
+            if (parent.user.getLanguage().equals("English")) {
                 yes_btn.setText("yes");
                 delete_txt.setText("Are you sure you want to delete?");
             }
@@ -266,7 +268,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
 
         TextView copy_txt = dialog1.findViewById(R.id.copy_txt);
 
-        if (parent.value.getLanguage().equals("English"))
+        if (parent.user.getLanguage().equals("English"))
             copy_txt.setText("Which list to copy?");
 
         myrcylist.setHasFixedSize(true);
@@ -352,7 +354,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                     amount_edit.setText(String.valueOf(finalValue));
                     amount_edit.setError(null);
                 } else {
-                    if (parent.value.getLanguage().equals("English")) {
+                    if (parent.user.getLanguage().equals("English")) {
                         amount_edit.setError("Minimum");
 
                     } else
@@ -365,7 +367,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
         String[] amountArr = products.getAmount().split(" ");
         String amount = amountArr[0];
         amount_edit.setText(amount);
-        if (parent.value.getLanguage().equals("Hebrew")) {
+        if (parent.user.getLanguage().equals("Hebrew")) {
             if (amountArr[1].equals("Units"))
                 popup_btn.setText("יח׳");
             else if (amountArr[1].equals("Gm"))
@@ -405,7 +407,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
                 if (TextUtils.isEmpty(amount)) {
                     amount_edit.setText("1");
                     amount_popup = "Units";
-                    if (parent.value.getLanguage().equals("English"))
+                    if (parent.user.getLanguage().equals("English"))
                         popup_btn.setText("Units");
 
                     else popup_btn.setText("יח׳");
@@ -440,7 +442,7 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void showPopup(View view) {
         PopupMenu popup = new PopupMenu(parent, view);
         popup.setOnMenuItemClickListener(this);
-        if (parent.value.getLanguage().equals("Hebrew"))
+        if (parent.user.getLanguage().equals("Hebrew"))
             popup.inflate(R.menu.product_dimensions_popup_hebrew);
         else popup.inflate(R.menu.product_dimensions_popup_english);
         popup.show();
@@ -506,16 +508,38 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
     public void addProductwithEnter() {
         String listName = newListName_edit.getText().toString().trim();
         Products Products;
-        if (parent.value.getLanguage().equals("Hebrew")) {
+        if (parent.user.getLanguage().equals("Hebrew")) {
             if (TextUtils.isEmpty(listName)) {
                 newListName_edit.setError("שם פריט?");
                 return;
             }
             for (Products name : Products_list) {
                 if (name.getName().equals(listName)) {
-                    newListName_edit.setError("הפריט כבר קיים");
+                    String val=name.getAmount();
+                    if(name.getAmount().contains("Units")) {
+                        String[] values =val.split(" Units");
+                        int finalValue = Integer.parseInt(values[0]);
+                        finalValue++;
+                        name.setAmount(finalValue+" Units");
+                        Products_list.get(Products_list.indexOf(name)).setAmount(finalValue+" Units");
+                        name.setAmount(finalValue+" Units");
+                        ModelProduct.instance.updateProducts(name, new ModelList.updateMyListsListener() {
+                            @Override
+                            public void onComplete() {
+                                newListName_edit.getText().clear();
+                                newListName_edit.requestFocus();
+                                newListName_edit.getText().clear();
+                                newListName_edit.requestFocus();
+                            }
+                        });
+                    } else {
+                        newListName_edit.setError("הפריט כבר קיים");
+                    }
                     return;
+
+
                 }
+
             }
         } else {
             if (TextUtils.isEmpty(listName)) {
@@ -524,20 +548,41 @@ public class ProductsFragment extends Fragment implements PopupMenu.OnMenuItemCl
             }
             for (Products name : Products_list) {
                 if (name.getName().equals(listName)) {
-                    newListName_edit.setError("The item already exists");
-                    return;
+                    String val=name.getAmount();
+                    if(name.getAmount().contains("Units")) {
+                        String[] values =val.split(" Units");
+                        int finalValue = Integer.parseInt(values[0]);
+                        finalValue++;
+                        name.setAmount(finalValue+" Units");
+                        Products_list.get(Products_list.indexOf(name)).setAmount(finalValue+" Units");
+                        name.setAmount(finalValue+" Units");
+                        ModelProduct.instance.updateProducts(name, new ModelList.updateMyListsListener() {
+                            @Override
+                            public void onComplete() {
+                                newListName_edit.getText().clear();
+                                newListName_edit.requestFocus();
+                                newListName_edit.getText().clear();
+                                newListName_edit.requestFocus();
+                            }
+                        });
+                        return;
+                    }else {
+                        newListName_edit.setError("The item already exists");
+                        return;
+                    }
                 }
             }
         }
         Products = new Products(listName, false, "noImage", "1 Units", parent.listID);
         ModelProduct.instance.addProducts(Products, null);
+        parent.CorrectList.setListCount(parent.CorrectList.getListCount()+1);
+        ModelList.instance.updateMyList(parent.CorrectList,null);
 
-        Products_list.add(Products);
-        ProductsAdapter.setList(Products_list);
         newListName_edit.getText().clear();
         newListName_edit.requestFocus();
         newListName_edit.getText().clear();
         newListName_edit.requestFocus();
+
 
     }
 

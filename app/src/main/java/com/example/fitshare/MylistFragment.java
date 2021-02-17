@@ -63,6 +63,8 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -88,16 +90,10 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
         parent.addList_btn.setVisibility(View.INVISIBLE);
         parent.copy_list_btn.setVisibility(View.INVISIBLE);
         parent.language_btn.setVisibility(View.VISIBLE);
+        parent.colorbtn.setVisibility(View.VISIBLE);
         parent.floating_addList_btn.show();
 
-        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
-        swipeRefreshLayout.setOnRefreshListener(this);
-
-        listView = view.findViewById(R.id.my_list_recycler);
-        listView.setHasFixedSize(true);
-        LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
-        listView.setLayoutManager(layoutManger);
-        new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
+        view.setBackgroundColor(parent.color);
 
         viewModel.getData(new myListsViewModel.GetAllMyListsListener() {
             @Override
@@ -117,7 +113,14 @@ public class MylistFragment extends Fragment implements SwipeRefreshLayout.OnRef
         });
 
 
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.refresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
+        listView = view.findViewById(R.id.my_list_recycler);
+        listView.setHasFixedSize(true);
+        LinearLayoutManager layoutManger = new LinearLayoutManager(parent);
+        listView.setLayoutManager(layoutManger);
+        new ItemTouchHelper(ItemTouchHelperCallback).attachToRecyclerView(listView);
         MyListAdapter = new MyListAdapter(parent);
         listView.setAdapter((RecyclerView.Adapter) MyListAdapter);
         MyListAdapter.setonItemClickListenr(new MyListAdapter.onItemClickListenr() {

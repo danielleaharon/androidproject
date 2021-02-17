@@ -12,7 +12,8 @@ import android.view.ViewGroup;
 
 public class UploadFragment extends Fragment {
 
-    MainActivity parent;
+    public MainActivity parent;
+
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -25,9 +26,8 @@ public class UploadFragment extends Fragment {
 
 
     public static UploadFragment newInstance(String param1, String param2) {
-        UploadFragment fragment = new UploadFragment();
 
-        return fragment;
+        return new UploadFragment();
     }
 
     @Override
@@ -42,8 +42,8 @@ public class UploadFragment extends Fragment {
 
         parent.Forgot_Password_btn.setVisibility(View.INVISIBLE);
         parent.Sign_btn.setVisibility(View.INVISIBLE);
-        View view = inflater.inflate(R.layout.fragment_upload, container, false);
-        return view;
+
+        return inflater.inflate(R.layout.fragment_upload, container, false);
     }
 
 }

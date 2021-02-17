@@ -2,6 +2,8 @@ package com.example.fitshare;
 
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.fitshare.model.ModelList;
@@ -50,6 +53,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
         this.listener = (onItemClickListenr) listener;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -79,42 +83,39 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
         private onItemClickListenr listener;
         private int i;
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public ViewHolder(final View view, final onItemClickListenr listener) {
             super(view);
             mView = view;
+            int[] colors= new int[1];
+
             i = getAdapterPosition();
             this.listener = listener;
             Amount_product = view.findViewById(R.id.Amount_product);
             image = view.findViewById(R.id.image);
-            image.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    parent.openImage(Products_list.get(i), parent.listID, Products_list.get(i).getImgUrl());
-                }
-            });
+            image.setOnClickListener(v -> parent.openImage(Products_list.get(i), parent.listID, Products_list.get(i).getImgUrl()));
 
             name = (TextView) view.findViewById(R.id.name);
+//            CheckBox.setBackgroundTintMode(PorterDuff.Mode.valueOf(String.valueOf(parent.color)));
             CheckBox = view.findViewById(R.id.select);
-            CheckBox.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (Products_list.get(i).isSelected()) {
+            CheckBox.setButtonTintList(ColorStateList.valueOf(parent.color));
+            CheckBox.setOnClickListener(v -> {
+                if (Products_list.get(i).isSelected()) {
 
-                        Products_list.get(i).setSelected(false);
+                    Products_list.get(i).setSelected(false);
 
-                    } else {
+                } else {
 
-                        Products_list.get(i).setSelected(true);
-                    }
-
-                    ModelProduct.instance.updateProducts(Products_list.get(i), new ModelList.updateMyListsListener() {
-                        @Override
-                        public void onComplete() {
-                            Log.d("TAG", "" + Products_list.get(i).isSelected() + "," + CheckBox.isChecked());
-                        }
-                    });
-
+                    Products_list.get(i).setSelected(true);
                 }
+
+                ModelProduct.instance.updateProducts(Products_list.get(i), new ModelList.updateMyListsListener() {
+                    @Override
+                    public void onComplete() {
+                        Log.d("TAG", "" + Products_list.get(i).isSelected() + "," + CheckBox.isChecked());
+                    }
+                });
+
             });
 
 
@@ -140,7 +141,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
             if (Products_list.get(i).getImgUrl().contains("noImage")) {
                 Picasso.get().cancelRequest(image);
                 image.setImageDrawable(null);
-                image.setImageResource(R.drawable.nophoto);
+                image.setImageResource(R.drawable.cam2);
 
             } else {
                 image.setImageDrawable(null);
@@ -152,7 +153,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
             String[] amountArr = Products_list.get(i).getAmount().split(" ");
             String amount1 = amountArr[0];
             String amount2 = amountArr[1];
-            if (parent.value.getLanguage().equals("Hebrew")) {
+            if (parent.user.getLanguage().equals("Hebrew")) {
                 if (amount2.equals("Units"))
                     amount2 = "יח׳";
                 else if (amount2.equals("Gm"))

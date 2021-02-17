@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/color1"
+        android:title="@string/yellow"
+        android:icon="@drawable/yellow"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/colo2"
+        android:title="@string/green"
+        android:icon="@drawable/green"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/color3"
+        android:title="@string/blue"
+        android:icon="@drawable/blue"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/color4"
+        android:icon="@drawable/orange"
+        app:showAsAction="never"
+        android:title="@string/orange" />
+
+
+
+</menu>

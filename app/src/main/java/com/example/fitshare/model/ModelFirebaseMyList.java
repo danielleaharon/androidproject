@@ -50,7 +50,7 @@ public class ModelFirebaseMyList {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                listener.onComplete(myLists);
             }
         });
 
@@ -160,7 +160,7 @@ public class ModelFirebaseMyList {
         myRef = database.getReference("Users");
         tempRef = database.getReference("AllLists");
 
-        myRef.child(userID).child("lists").child(listID).removeValue();
+        myRef.child(userID).child("lists").child(listID).child("isDelete").setValue(true);
         tempRef.child(listID).child("user").child(userID).removeValue();
 
 
@@ -175,6 +175,12 @@ public class ModelFirebaseMyList {
         myRef.child(userID).child("lists").child(list.getListID()).setValue(list);
         tempRef = database.getReference("AllLists");
         tempRef.child(list.getListID()).child("user").child(userID).setValue(email);
+    }
+    public void UpdateMyList( myLists list) {
+        DatabaseReference tempRef;
+
+        tempRef = database.getReference("AllLists");
+        tempRef.child(list.getListID()).child("listName").setValue(list.getListName());
     }
 
 

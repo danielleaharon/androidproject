@@ -1,17 +1,19 @@
 package com.example.fitshare;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -22,9 +24,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.view.menu.MenuPopupHelper;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.LiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -39,7 +42,6 @@ import com.example.fitshare.model.Products;
 import com.example.fitshare.model.User;
 import com.example.fitshare.model.myLists;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 import java.io.FileNotFoundException;
@@ -54,11 +56,10 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int GALLERY_REQUEST = 2;
 
-    User value;
+    User user;
     String listID = null;
     String ListName;
-    LiveData<List<myLists>> liveData;
-    private FirebaseAuth mAuth;
+
     Button addList_btn;
     myLists CorrectList;
     TextView titel;
@@ -72,6 +73,9 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     List<String> userDailog = new ArrayList<>();
     List<myLists> AllMyLists = new ArrayList<>();
     FloatingActionButton floating_addList_btn;
+    int color;
+    Toolbar toolbar;
+    Button colorbtn;
 
 
     @Override
@@ -79,22 +83,35 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         titel = findViewById(R.id.title);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        mAuth = FirebaseAuth.getInstance();
-        value = ModelUser.instance.getUser();
+
+        user = ModelUser.instance.getUser();
         language_btn = findViewById(R.id.language_btn);
         language_btn.setOnClickListener((v) -> showPopup(v));
 
+        copy_list_btn = findViewById(R.id.copy_list_btn);
+        color = user.getColor();
+        toolbar.setBackgroundColor(color);
+        colorbtn = findViewById(R.id.colorbtn);
+        colorbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showPopup2(v);
+            }
+        });
+
 
         floating_addList_btn = findViewById(R.id.floating_addList_btn);
+        floating_addList_btn.setBackgroundTintList(ColorStateList.valueOf(color));
         floating_addList_btn.setOnClickListener(view -> {
 
             userDailog = new ArrayList<>();
-            userDailog.add(value.getEmail());
+            userDailog.add(user.getEmail());
             NavDirections directions = MylistFragmentDirections.actionMylistFragmentToAddListFragment();
             navCtrl.navigate(directions);
 
@@ -102,7 +119,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         });
 
         logout_btn = findViewById(R.id.logout_btn);
-        logout_btn.setOnClickListener((v) -> Logout());
+        logout_btn.setOnClickListener((v) -> ModelUser.instance.Logout(this));
 
 
         addList_btn = findViewById(R.id.add_btn);
@@ -118,13 +135,13 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 });
             } else {
                 userDailog = new ArrayList<>();
-                userDailog.add(value.getEmail());
+                userDailog.add(user.getEmail());
                 NavDirections directions = MylistFragmentDirections.actionGlobalAddListFragment();
                 navCtrl.navigate(directions);
             }
 
         });
-        copy_list_btn = findViewById(R.id.copy_list_btn);
+
 
         navCtrl = Navigation.findNavController(this, R.id.home_nav_host);
         NavigationUI.setupActionBarWithNavController(this, navCtrl);
@@ -204,7 +221,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                 camra_btn = dialog2.findViewById(R.id.camra_btn);
                 gallery_btn = dialog2.findViewById(R.id.gallery_btn);
 
-                if (value.getLanguage().equals("English")) {
+                if (user.getLanguage().equals("English")) {
                     camra_btn.setText("Open a camera");
                     gallery_btn.setText("Gallery");
 
@@ -245,12 +262,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                         public void onSuccess(String url) {
 
                             product.setImgUrl(url);
-                            ModelProduct.instance.updateProducts(products, new ModelList.updateMyListsListener() {
-                                @Override
-                                public void onComplete() {
-                                    dialog1.cancel();
-                                }
-                            });
+                            ModelProduct.instance.updateProducts(products, () -> dialog1.cancel());
 
                         }
 
@@ -266,18 +278,11 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         });
 
         Button cancel_btn = dialog1.findViewById(R.id.cancel_btn);
-        cancel_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog1.cancel();
-            }
-        });
-
+        cancel_btn.setOnClickListener(v -> dialog1.cancel());
 
         dialog1.setCancelable(true);
         window.setLayout(ActionBar.LayoutParams.WRAP_CONTENT, ActionBar.LayoutParams.WRAP_CONTENT);
         dialog1.show();
-
 
     }
 
@@ -330,19 +335,20 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
 
             case R.id.hebrew:
-                value.setLanguage("Hebrew");
-                ModelUser.instance.UpdateUser("Hebrew", null);
+                user.setLanguage("Hebrew");
+                ModelUser.instance.UpdateUserLanguage(user, null);
                 setTitle("רשימות");
 
                 break;
             case R.id.english:
-                value.setLanguage("English");
-                ModelUser.instance.UpdateUser("English", null);
+                user.setLanguage("English");
+                ModelUser.instance.UpdateUserLanguage(user, null);
                 setTitle("Lists");
                 break;
 
@@ -365,6 +371,83 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         popup.show();
     }
 
+    @SuppressLint("RestrictedApi")
+    public void showPopup2(View view) {
+
+
+        PopupMenu menu = new PopupMenu(this, view);
+        if (user.getLanguage().equals("English"))
+            menu.inflate(R.menu.color_eng);
+        else menu.inflate(R.menu.color);
+
+
+        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+
+                    case R.id.color1:
+                        color = Color.rgb(243, 214, 104);
+                        user.setColor(color);
+                        ModelUser.instance.UpdateUserColor(user, new ModelUser.AddUserListener() {
+                            @Override
+                            public void onComplete() {
+                                toolbar.setBackgroundColor(color);
+                                floating_addList_btn.setBackgroundTintList(ColorStateList.valueOf(color));
+                            }
+                        });
+
+
+                        break;
+                    case R.id.colo2:
+                        color = Color.rgb(152, 230, 152);
+                        user.setColor(color);
+                        ModelUser.instance.UpdateUserColor(user, new ModelUser.AddUserListener() {
+                            @Override
+                            public void onComplete() {
+                                toolbar.setBackgroundColor(color);
+                                floating_addList_btn.setBackgroundTintList(ColorStateList.valueOf(color));
+                            }
+                        });
+                        break;
+                    case R.id.color3:
+                        color = Color.rgb(153, 230, 255);
+                        user.setColor(color);
+                        ModelUser.instance.UpdateUserColor(user, new ModelUser.AddUserListener() {
+                            @Override
+                            public void onComplete() {
+                                toolbar.setBackgroundColor(color);
+                                floating_addList_btn.setBackgroundTintList(ColorStateList.valueOf(color));
+                            }
+                        });
+                        break;
+                    case R.id.color4:
+                        color = Color.rgb(255, 204, 102);
+                        user.setColor(color);
+
+                        ModelUser.instance.UpdateUserColor(user, new ModelUser.AddUserListener() {
+                            @Override
+                            public void onComplete() {
+                                toolbar.setBackgroundColor(color);
+                                floating_addList_btn.setBackgroundTintList(ColorStateList.valueOf(color));
+                            }
+                        });
+                        break;
+                    default:
+
+                        return false;
+                }
+                navCtrl.popBackStack();
+                NavDirections directions = MylistFragmentDirections.actionGlobalMylistFragment();
+                navCtrl.navigate(directions);
+                return true;
+            }
+        });
+        MenuPopupHelper menuHelper = new MenuPopupHelper(this, (MenuBuilder) menu.getMenu(), view);
+        menuHelper.setForceShowIcon(true);
+        menuHelper.show();
+    }
+
     public String getListID() {
 
         return this.listID;
@@ -383,10 +466,7 @@ public class HomeActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         return -1;
     }
 
-    public void Logout() {
-        mAuth.signOut();
-        Intent intent = new Intent(this, MainActivity.class);
-        this.startActivity(intent);
-        this.finish();
-    }
+//    public void Logout() {
+//        ModelUser.instance.Logout(this);
+//    }
 }

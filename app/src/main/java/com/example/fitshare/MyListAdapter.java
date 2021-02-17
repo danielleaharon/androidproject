@@ -1,5 +1,6 @@
 package com.example.fitshare;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         void onClick(int position);
     }
 
+    @SuppressLint("StaticFieldLeak")
     static HomeActivity parent;
     private Activity activity;
     private LayoutInflater inflater;
@@ -26,7 +28,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
 
     public MyListAdapter(Activity activity) {
         this.activity = activity;
-        this.parent = (HomeActivity) activity;
+        parent = (HomeActivity) activity;
         this.inflater = activity.getLayoutInflater();
     }
 
@@ -35,7 +37,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
     }
 
     public void setList(List<myLists> lists) {
-        this.myLists = lists;
+        myLists = lists;
         notifyDataSetChanged();
 
     }
@@ -68,8 +70,7 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         private View mView;
         private TextView name;
         private TextView product_count;
-        private int i;
-        private onItemClickListenr listener;
+        private onItemClickListenr Listener;
 
 
         public ViewHolder(final View view, final onItemClickListenr listener) {
@@ -77,16 +78,13 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
             this.mView = view;
             this.product_count = mView.findViewById(R.id.product_count);
             this.name = mView.findViewById(R.id.name);
-            this.listener = listener;
+            this.Listener = listener;
 
-            mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            listener.onClick(position);
-                        }
+            mView.setOnClickListener(v -> {
+                if (Listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        Listener.onClick(position);
                     }
                 }
             });
@@ -95,14 +93,18 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder
         }
 
 
+        @SuppressLint("SetTextI18n")
         public void bind(int position) {
 
-            this.i = position;
+
             name.setText(myLists.get(position).getListName());
-            if (parent.value.getLanguage().equals("Hebrew"))
-                product_count.setText("מספר מוצרים: " + myLists.get(position).getListCount());
+            if (parent.user.getLanguage().equals("Hebrew")) {
+                String string="מספר מוצרים: " + myLists.get(position).getListCount();
+                product_count.setText(string);
+            }
             else {
-                product_count.setText("Number of products: " + myLists.get(position).getListCount());
+                String string="Number of products: " + myLists.get(position).getListCount();
+                product_count.setText(string);
             }
 
 

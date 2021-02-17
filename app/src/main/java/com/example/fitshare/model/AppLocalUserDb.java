@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase;
 
 import com.example.fitshare.MyApplication;
 
-@Database(entities = {User.class}, version = 1)
+@Database(entities = {User.class}, version = 2)
 abstract class AppLocalUserDbRepository extends RoomDatabase {
     public abstract UserDao UserDao();
 

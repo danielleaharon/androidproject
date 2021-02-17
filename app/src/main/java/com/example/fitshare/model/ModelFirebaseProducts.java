@@ -18,6 +18,7 @@ public class ModelFirebaseProducts {
     List<Products> productsList;
     List<Products> CopyproductsList;
     List<String> listUser;
+    int listCount;
 
 
     private ModelFirebaseProducts() {
@@ -42,17 +43,15 @@ public class ModelFirebaseProducts {
         myRef = database.getReference("AllLists");
         tempRef = database.getReference("Users");
         productsList.add(Products);
-        ModelFirebaseMyList.instance.getUserOfList(ListID, new ModelFirebaseMyList.UserListListener() {
-            @Override
-            public void onComplete(List<String> data) {
-                listUser= data;
-                for (String userID : listUser) {
-                    userID = ModelFirebaseUser.instance.cleanUserName(userID);
-                    tempRef.child(userID).child("lists").child(ListID).child("listCount").setValue(productsList.size());
-                    myRef.child(ListID).child("listCount").setValue(productsList.size());
-                    myRef.child(ListID).child("Products").child(Products.getName()).setValue(Products);
-                    listener.onComplete();
-                }
+        listCount++;
+        ModelFirebaseMyList.instance.getUserOfList(ListID, data -> {
+            listUser= data;
+            for (String userID : listUser) {
+                userID = ModelFirebaseUser.instance.cleanUserName(userID);
+                tempRef.child(userID).child("lists").child(ListID).child("listCount").setValue(listCount);
+                myRef.child(ListID).child("listCount").setValue(listCount);
+                myRef.child(ListID).child("Products").child(Products.getName()).setValue(Products);
+                listener.onComplete();
             }
         });
 
@@ -73,13 +72,14 @@ public class ModelFirebaseProducts {
         void onComplete(List<Products> data, List<String> userList);
     }
 
-    public void getListProducts(String id, GetProductsListener listener) {
+    public void getListProducts(@NonNull String id, GetProductsListener listener) {
 
         DatabaseReference myRef;
         DatabaseReference tempRef;
         this.productsList = new ArrayList<>();
         String listID = id.trim();
         listUser = new ArrayList<>();
+        listCount=0;
         myRef = database.getReference("AllLists");
         tempRef = myRef.child(listID).child("user");
         myRef = myRef.child(listID).child("Products");
@@ -89,9 +89,10 @@ public class ModelFirebaseProducts {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                     Products products = postSnapshot.getValue(Products.class);
-
-                    productsList.add(products);
-
+                    if(!products.isDelete()) {
+                        listCount++;
+                        productsList.add(products);
+                    }
                 }
 
                 tempRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -132,13 +133,14 @@ public class ModelFirebaseProducts {
         tempRef = database.getReference("Users");
 
         productsList.remove(position);
+        listCount--;
 
         for (String user : listUser) {
             String userID = ModelUser.instance.cleanUserName(user);
-            tempRef.child(userID).child("lists").child(id).child("listCount").setValue(productsList.size());
+            tempRef.child(userID).child("lists").child(id).child("listCount").setValue(listCount);
         }
 
-        myRef.child(id).child("listCount").setValue(productsList.size());
+        myRef.child(id).child("listCount").setValue(listCount);
         myRef.child(id).child("Products").child(product.getName()).child("delete").setValue(true);
         if (!product.getImgUrl().equals("noImage"))
             ImageModel.deleteImage(product.getImgUrl());
@@ -167,17 +169,13 @@ public class ModelFirebaseProducts {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                     Products  pro = postSnapshot.getValue(Products.class);
+                    if(!pro.isDelete())
                     CopyproductsList.add(pro);
 
 
                 }
 
-                CopyProduct(listID, listPosition, new CopyProductsListener() {
-                    @Override
-                    public void onComplete() {
-                        listener.onComplete();
-                    }
-                });
+                CopyProduct(listID, listPosition, () -> listener.onComplete());
 
 
 
@@ -195,13 +193,15 @@ public class ModelFirebaseProducts {
         DatabaseReference tempRef;
         myRef = database.getReference("AllLists");
         tempRef = database.getReference("Users");
-        int i = productsList.size();
+        int i = listCount;
         for (Products product : productsList) {
             for (Products pro : CopyproductsList) {
                 if (pro.getName().equals(product.getName())) {
                     i--;
                     break;
                 }
+
+
             }
                 if (!product.getImgUrl().equals("noImage")) {
 
@@ -234,20 +234,16 @@ public class ModelFirebaseProducts {
         List<Products>  list= getCopyproductsList();
         int j = list.size() + finalI;
 
-                ModelFirebaseMyList.instance.getUserOfList(listID, new ModelFirebaseMyList.UserListListener() {
-                    @Override
-                    public void onComplete(List<String> data) {
-                       List<String> listUser =data;
-                        for (String userID : listUser) {
-                            userID = ModelUser.instance.cleanUserName(userID);
-                            tempRef.child(userID).child("lists").child(listID).child("listCount").setValue(j);
+                ModelFirebaseMyList.instance.getUserOfList(listID, data -> {
+                   List<String> listUser = data;
+                    for (String userID : listUser) {
+                        userID = ModelUser.instance.cleanUserName(userID);
+                        tempRef.child(userID).child("lists").child(listID).child("listCount").setValue(j);
 
-                        }
-                        myRef.child(listID).child("listCount").setValue(j);
-
-                        listener.onComplete();
                     }
+                    myRef.child(listID).child("listCount").setValue(j);
 
+                    listener.onComplete();
                 });
             }
 

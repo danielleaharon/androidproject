@@ -3,9 +3,12 @@ package com.example.fitshare;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +29,7 @@ import android.widget.TextView;
 import com.example.fitshare.model.ModelList;
 import com.example.fitshare.model.ModelUser;
 import com.example.fitshare.model.myLists;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +48,8 @@ public class AddListFragment extends Fragment {
     String userName;
 
 
-    public AddListFragment() {}
-
+    public AddListFragment() {
+    }
 
 
     public static AddListFragment newInstance(String param1, String param2) {
@@ -75,6 +79,7 @@ public class AddListFragment extends Fragment {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -84,15 +89,19 @@ public class AddListFragment extends Fragment {
         parent.addList_btn.setVisibility(View.INVISIBLE);
         parent.copy_list_btn.setVisibility(View.INVISIBLE);
         parent.language_btn.setVisibility(View.INVISIBLE);
+        parent.colorbtn.setVisibility(View.INVISIBLE);
         parent.floating_addList_btn.hide();
         parent.setTitle("");
 
+        view.setBackgroundColor(parent.color);
         Button add_friend_btn = view.findViewById(R.id.add_friend_btn);
         TextView listName_txt = view.findViewById(R.id.listName_txt);
         TextView listFriend_txt = view.findViewById(R.id.listFriend_txt);
         listName_edit = view.findViewById(R.id.listName_edit);
 
-        if (parent.value.getLanguage().equals("Hebrew")) {
+        listName_txt.setBackgroundTintList(ColorStateList.valueOf(parent.color));
+        listFriend_txt.setBackgroundTintList(ColorStateList.valueOf(parent.color));
+        if (parent.user.getLanguage().equals("Hebrew")) {
             listName_txt.setText(R.string.listNameHebrew);
             listFriend_txt.setText(R.string.listFriendHebrew);
             add_friend_btn.setText("הוסף חבר חדש");
@@ -106,7 +115,7 @@ public class AddListFragment extends Fragment {
         parent.save_btn.setOnClickListener(v -> {
 
             String listName = listName_edit.getText().toString().trim();
-            if (parent.value.getLanguage().equals("Hebrew")) {
+            if (parent.user.getLanguage().equals("Hebrew")) {
                 if (TextUtils.isEmpty(listName)) {
                     listName_edit.setError("צריך שם לרשימה");
                     return;
@@ -144,16 +153,29 @@ public class AddListFragment extends Fragment {
                 }
                 ModelList.instance.updateMyList(parent.CorrectList, null);
                 for (String email : ListOfUser) {
-                    ModelList.instance.addUserToList(email,parent.CorrectList);
+                    ModelList.instance.addUserToList(email, parent.CorrectList, new ModelList.addUserListsListener() {
+                        @Override
+                        public void onComplete() {
+                            hideKeyboard(v);
+
+                            parent.navCtrl.popBackStack();
+
+
+                        }
+                    });
 
                 }
 
             } else {
 
-                ModelList.instance.addMyList(listName, ListOfUser, null);
+                ModelList.instance.addMyList(listName, ListOfUser, new ModelList.AddMyListsListener() {
+                    @Override
+                    public void onComplete() {
+                        hideKeyboard(v);
+                        parent.navCtrl.popBackStack();
+                    }
+                });
             }
-            hideKeyboard(v);
-            parent.navCtrl.popBackStack();
 
 
         });
@@ -190,15 +212,15 @@ public class AddListFragment extends Fragment {
             Button cancel_btn = dialog1.findViewById(R.id.cancel_btn);
 
             cancel_btn.setOnClickListener(v1 -> dialog1.cancel());
-            Button ok_btn = dialog1.findViewById(R.id.ok_btn);
+            FloatingActionButton ok_btn = dialog1.findViewById(R.id.ok_btn);
             ok_btn.setOnClickListener(v12 -> {
                 userName = user_edit.getText().toString().trim();
-                if (parent.value.getLanguage().equals("Hebrew")) {
+                if (parent.user.getLanguage().equals("Hebrew")) {
                     if (TextUtils.isEmpty(userName)) {
                         user_edit.setError("צריך שם משתמש");
                         return;
                     }
-                    if (parent.value.getEmail().equals(userName)) {
+                    if (parent.user.getEmail().equals(userName)) {
                         user_edit.setError("אתה לא יכול להוסיף את עצמך!");
                         return;
                     }
@@ -216,7 +238,7 @@ public class AddListFragment extends Fragment {
                                 if (parent.CorrectList != null) {
                                     addListAdapter.notifyDataSetChanged();
                                     addListAdapter.updateList(ListOfUser);
-                                   // listView.setAdapter(addListAdapter);
+                                    // listView.setAdapter(addListAdapter);
                                 }
                                 dialog1.cancel();
                             } else {
@@ -232,7 +254,7 @@ public class AddListFragment extends Fragment {
                         user_edit.setError("Need a username");
                         return;
                     }
-                    if (parent.value.getEmail().equals(userName)) {
+                    if (parent.user.getEmail().equals(userName)) {
                         user_edit.setError("You can not add yourself!");
                         return;
                     }
@@ -251,7 +273,7 @@ public class AddListFragment extends Fragment {
 
                                     addListAdapter.notifyDataSetChanged();
                                     addListAdapter.updateList(ListOfUser);
-                                   // listView.setAdapter(addListAdapter);
+                                    // listView.setAdapter(addListAdapter);
                                 }
                                 dialog1.cancel();
                             } else {

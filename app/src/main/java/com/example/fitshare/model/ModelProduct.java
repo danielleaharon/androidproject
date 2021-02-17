@@ -40,7 +40,7 @@ public class ModelProduct {
             @Override
             public void onComplete(List<Products> data, List<String> userList) {
                 ProductsData = data;
-                class MyAsyncTask extends AsyncTask {
+               class  MyAsyncTask extends AsyncTask {
 
                     @Override
                     protected Object doInBackground(Object[] objects) {
@@ -78,7 +78,6 @@ public class ModelProduct {
                     @Override
                     protected Object doInBackground(Object[] objects) {
                         AppLocalProductDb.db.ProductsDao().insertAll(Products);
-                        ModelList.instance.RefreshMyList(null);
 
                         return null;
                     }
@@ -91,9 +90,10 @@ public class ModelProduct {
                         }
                     }
                 }
-                ;
+
                 MyAsyncTask task = new MyAsyncTask();
                 task.execute();
+
             }
         });
 

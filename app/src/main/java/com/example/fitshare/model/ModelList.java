@@ -32,9 +32,10 @@ public class ModelList {
                     @Override
                     protected Object doInBackground(Object[] objects) {
 
-                        for (myLists my : ldata) {
-                            AppLocalListDb.db.myListDao().insertAll(my);
-                        }
+
+                            for (myLists my : ldata) {
+                                AppLocalListDb.db.myListDao().insertAll(my);
+                            }
 
                         return null;
                     }
@@ -90,7 +91,7 @@ public class ModelList {
                 }
             }
         }
-        ;
+
         MyAsyncTask task = new MyAsyncTask();
         task.execute();
     }
@@ -128,9 +129,11 @@ public class ModelList {
     }
 
     public void updateMyList(final myLists myLists, final updateMyListsListener listener) {
+
         class MyAsyncTask extends AsyncTask {
             @Override
             protected Object doInBackground(Object[] objects) {
+                ModelFirebaseMyList.instance.UpdateMyList(myLists);
                 AppLocalListDb.db.myListDao().updateMyLists(myLists);
                 return null;
             }
@@ -161,12 +164,17 @@ public class ModelList {
         });
     }
 
-    public void addUserToList(String email, myLists myLists) {
+    public interface addUserListsListener {
+        void onComplete();
+    }
+    public void addUserToList(String email, myLists myLists,addUserListsListener listener) {
         ModelFirebaseMyList.instance.addUserToList(email, myLists);
+         listener.onComplete();
     }
 
     public void DeleteUserToList(String email, myLists myLists) {
         ModelFirebaseMyList.instance.deleteUserFromList(email, myLists.getListID());
+
     }
 
     public void deleteAll() {

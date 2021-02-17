@@ -19,6 +19,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:titleTextColor="#000000" />
 
+
+
     <Button
         android:id="@+id/add_btn"
         android:layout_width="32dp"
@@ -49,6 +51,7 @@
         android:text="רשימות"
         android:textColor="#1C1B1B"
         android:textSize="24sp"
+        android:elevation="15dp"
         app:layout_constraintBottom_toTopOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="@+id/toolbar"
         app:layout_constraintHorizontal_bias="0.498"
@@ -113,7 +116,6 @@
         android:layout_marginEnd="64dp"
         android:background="@drawable/copyicon"
         android:gravity="center"
-        android:textSize="7sp"
         app:layout_constraintBottom_toBottomOf="@+id/toolbar"
         app:layout_constraintEnd_toEndOf="@+id/toolbar"
         app:layout_constraintTop_toTopOf="@+id/toolbar"
@@ -131,6 +133,19 @@
         app:layout_constraintStart_toStartOf="@+id/toolbar"
         app:layout_constraintTop_toTopOf="@+id/toolbar"
         app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/colorbtn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="74dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/color50"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
+        app:layout_constraintStart_toStartOf="@+id/toolbar"
+        app:layout_constraintTop_toTopOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

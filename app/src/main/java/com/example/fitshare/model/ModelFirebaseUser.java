@@ -63,13 +63,18 @@ public class ModelFirebaseUser {
         });
 
     }
-    public void newUser(User user) {
+    public interface NewUserListener{
+        void onComplete();
+    }
+    public void newUser(User user, NewUserListener listener) {
 
 
         this.user=user;
+        userID=user.getId();
         myRef = database.getReference("Users");
 
         myRef.child(userID).setValue(user);
+        listener.onComplete();
 
 
     }
@@ -108,6 +113,13 @@ public class ModelFirebaseUser {
         user.setLanguage(language);
 
     }
+    public void updateColorUser(int color) {
+        DatabaseReference myRef;
+        myRef = database.getReference("Users");
+        myRef.child(userID).child("color").setValue(color);
+
+
+    }
 
     public interface AllUserListener{
         void onComplete(List<String > data);
@@ -135,6 +147,8 @@ public class ModelFirebaseUser {
 
 
     }
+
+
 
 
 }
