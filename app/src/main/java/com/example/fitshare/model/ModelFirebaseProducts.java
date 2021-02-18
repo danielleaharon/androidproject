@@ -89,10 +89,9 @@ public class ModelFirebaseProducts {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                     Products products = postSnapshot.getValue(Products.class);
-                    if(!products.isDelete()) {
-                        listCount++;
+                    if(!products.isDelete()) listCount++;
                         productsList.add(products);
-                    }
+
                 }
 
                 tempRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -196,7 +195,7 @@ public class ModelFirebaseProducts {
         int i = listCount;
         for (Products product : productsList) {
             for (Products pro : CopyproductsList) {
-                if (pro.getName().equals(product.getName())) {
+                if (pro.getName().equals(product.getName())&&!pro.isDelete()) {
                     i--;
                     break;
                 }
